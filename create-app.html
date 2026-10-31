@@ -1,0 +1,95 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#070914"><meta name="description" content="FG MAFIAN real Android APK builder."><title>Create App | FG MAFIAN</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css"></head><body><video class="bg-video" muted loop playsinline webkit-playsinline preload="none" aria-hidden="true"><source src="https://cdn.videotourl.net/videos/7d41a872-6e5c-480d-a88f-63084044c95d.mp4" type="video/mp4"></video><div class="backdrop"></div><header class="topbar"><a class="brand" href="/"><span class="brand-mark small">FM</span><span>FG <b>MAFIAN</b><small>ANDROID APP BUILDER</small></span></a><nav class="multi-nav" aria-label="Main navigation"><a class="nav-home" href="/">⌂ Home</a><a href="/create-app">＋ Create App</a><a href="/builds">▣ My Builds</a><a href="/account">♙ Account</a><a href="/docs">▤ Quick Guide</a><a href="/about">ⓘ About</a></nav><a class="contact-mini" href="https://t.me/FG_MAFIAN" target="_blank" rel="noopener">Contact owner</a></header><main><div id="maintenanceNotice" class="maintenance-notice hidden" role="status"></div><section id="builder" class="builder-section">
+      <div class="section-heading"><p class="eyebrow">THE CREATION STUDIO</p><h2>Build your installable Android app</h2><p class="muted">Add your website and choose how your app should look.</p></div>
+      <div class="builder-grid">
+        <form id="appForm" class="form-card glass">
+          <div class="form-title"><span class="step">01</span><div><h3>Website details</h3><p class="muted">Where should your app take users?</p></div></div>
+          <label>Website URL <span class="required">*</span><input id="siteUrl" type="url" placeholder="https://example.com" required></label>
+          <button type="button" id="previewBtn" class="btn btn-ghost full">Preview website ↗</button>
+          <div class="form-title second"><span class="step">02</span><div><h3>App identity</h3><p class="muted">Give your app its own look.</p></div></div>
+          <div class="two-col">
+            <label>App name <span class="required">*</span><input id="appName" maxlength="40" placeholder="My Awesome App" required></label>
+            <label>Package ID<input id="packageId" value="com.fgmafian.myapp" placeholder="com.company.app"></label>
+          </div>
+          <div class="two-col"><label>Version name<input id="versionName" value="1.0.0" maxlength="20" placeholder="1.0.0"></label><label>Version code<input id="versionCode" type="number" min="1" max="999999999" value="1"></label></div>
+          <label>App description<textarea id="description" rows="2" maxlength="180" placeholder="Describe what your app does"></textarea></label>
+          <label>Home-screen app logo<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><small class="hint">This is the icon shown on the phone home screen. PNG, JPG or WebP recommended.</small></label>
+          <label>Opening-screen logo (optional)<input id="splashLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><small class="hint">A separate logo shown in the center while your app opens, like the example. If skipped, Android uses its default splash icon.</small></label>
+          <div class="two-col">
+            <label>Theme color<input id="themeColor" type="color" value="#3978ff"></label>
+            <label>Splash background<input id="splashColor" type="color" value="#070914"></label>
+          </div>
+          <div class="form-title second"><span class="step">03</span><div><h3>App behavior</h3><p class="muted">Choose your preferred settings.</p></div></div>
+          <div class="two-col">
+            <label>Orientation<select id="orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option><option value="any">Auto</option></select></label>
+            <label>Display mode<select id="displayMode"><option value="fullscreen">Fullscreen</option><option value="standalone">Standalone</option></select></label>
+          </div>
+          <div class="switches">
+            <label class="switch-row"><span>Pull to refresh</span><input id="pullRefresh" type="checkbox" checked><i></i></label>
+            <label class="switch-row"><span>Show navigation controls</span><input id="navControls" type="checkbox"><i></i></label>
+          </div>
+          <button class="btn btn-primary full generate" type="submit"><span>Build installable APK</span><b>↗</b></button>
+          <p class="fine-print">Your website URL and the two optional compressed logo images are sent to the secure build service so they can be added to the APK.</p>
+        </form>
+
+        <aside class="side-column">
+          <div class="output-card glass">
+            <p class="eyebrow">LIVE CONFIGURATION</p><div class="app-preview-icon" id="iconPreview">FM</div>
+            <h3 id="previewName">Your app name</h3><p id="previewUrl" class="muted">Your website URL will appear here</p>
+            <div class="device-preview-wrap">
+              <div class="preview-heading"><span>PHONE PREVIEW</span><span class="preview-live-dot">LIVE</span></div>
+              <div class="device-mockup" aria-label="Preview of your Android app opening screen">
+                <div class="device-screen" id="splashPreviewScreen">
+                  <div class="device-status"><span>9:41</span><span>● ● ▰</span></div>
+                  <div class="splash-preview-center">
+                    <div class="splash-preview-logo" id="splashPreviewLogo">FM</div>
+                    <div class="splash-preview-name" id="splashPreviewName">Your app name</div>
+                  </div>
+                  <div class="device-bottom-mark">POWERED BY FG MAFIAN</div>
+                </div>
+              </div>
+              <p class="preview-caption">Opening screen preview · logo and background update live</p>
+            </div>
+            <div class="config-list"><div><span>Platform</span><b>Android APK</b></div><div><span>Framework</span><b>Native Android WebView</b></div><div><span>Output</span><b>Android APK</b></div></div>
+            <div id="result" class="result hidden"><div class="success-icon">✓</div><h3 id="buildTitle">Starting your APK build…</h3><p id="buildMessage" class="muted">Your Android app is being prepared.</p><a id="downloadApk" class="btn btn-primary full hidden" href="#" target="_blank" rel="noopener">Download APK</a><button id="copyPublicDownload" class="btn btn-ghost full hidden" type="button">Copy public download link</button><p id="publicDownloadHint" class="fine-print hidden">Anyone with this link can download this APK. Keep it private if you do not want to share the app publicly.</p></div>
+          </div>
+          <div class="notice glass"><b>Important build note</b><p>APK builds run through the connected GitHub Actions workflow. Users can download and install the generated Android APK. iOS builds are not included.</p></div>
+          <div id="gameModal" class="game-modal hidden" role="dialog" aria-modal="true" aria-labelledby="gameModalTitle">
+            <div class="game-card glass">
+              <button type="button" id="gameClose" class="game-close" aria-label="Close game">×</button>
+              <p class="eyebrow">MAFIAN GAME ZONE</p>
+              <h2 id="gameModalTitle">Take a quick break?</h2>
+              <section id="gameOffer">
+                <div class="game-symbol" aria-hidden="true">🎮</div>
+                <h3>Play a quick game?</h3>
+                <p class="muted">Your APK build will continue in the background. Play a round of Tic-Tac-Toe, skip the game, or leave this page whenever you like.</p>
+                <div class="game-actions"><button type="button" id="playGameBtn" class="btn btn-primary">PLAY GAME</button><button type="button" id="skipGameBtn" class="btn btn-ghost">SKIP GAME</button></div>
+              </section>
+              <section id="cyberGame" class="cyber-game hidden">
+                <div id="difficultyPicker" class="difficulty-picker">
+                  <h3>CHOOSE YOUR LEVEL</h3>
+                  <p class="muted">Pick how challenging you want the computer to be.</p>
+                  <div class="difficulty-options">
+                    <button type="button" class="btn btn-ghost difficulty-btn" data-difficulty="easy">EASY</button>
+                    <button type="button" class="btn btn-ghost difficulty-btn" data-difficulty="medium">MEDIUM</button>
+                    <button type="button" class="btn btn-primary difficulty-btn" data-difficulty="hard">HARD</button>
+                  </div>
+                </div>
+                <div id="gamePlayArea" class="hidden">
+                <div class="game-level-row"><span id="gameLevelLabel">LEVEL: MEDIUM</span><button type="button" id="changeDifficultyBtn" class="btn btn-ghost">CHANGE LEVEL</button></div>
+                <div class="game-stats"><span>YOU <b>×</b></span><span>COMPUTER <b>○</b></span></div>
+                <h3>TIC-TAC-TOE</h3>
+                <p class="muted">You are ×. Get three in a row to win.</p>
+                <div id="ticTacToeBoard" class="tic-tac-toe-board" role="group" aria-label="Tic-Tac-Toe board">
+                  <button type="button" class="tic-cell" data-cell="0" aria-label="Square 1"></button><button type="button" class="tic-cell" data-cell="1" aria-label="Square 2"></button><button type="button" class="tic-cell" data-cell="2" aria-label="Square 3"></button>
+                  <button type="button" class="tic-cell" data-cell="3" aria-label="Square 4"></button><button type="button" class="tic-cell" data-cell="4" aria-label="Square 5"></button><button type="button" class="tic-cell" data-cell="5" aria-label="Square 6"></button>
+                  <button type="button" class="tic-cell" data-cell="6" aria-label="Square 7"></button><button type="button" class="tic-cell" data-cell="7" aria-label="Square 8"></button><button type="button" class="tic-cell" data-cell="8" aria-label="Square 9"></button>
+                </div>
+                <p id="gameFeedback" class="guess-feedback" role="status" aria-live="polite">Your turn — choose any square.</p>
+                <div class="game-actions"><button type="button" id="startGameBtn" class="btn btn-primary">NEW GAME</button><button type="button" id="doneGameBtn" class="btn btn-ghost">CLOSE GAME</button></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section></main><footer><div class="brand"><span class="brand-mark small">FM</span><span>FG <b>MAFIAN</b><small>ANDROID APP BUILDER</small></span></div><p>Built for creators who think beyond the browser.</p><div class="footer-links"><a href="https://t.me/fgmafian" target="_blank" rel="noopener">Telegram channel</a><a href="https://t.me/FG_MAFIAN" target="_blank" rel="noopener">Contact owner</a></div><strong>POWERED BY FG MAFIAN</strong></footer><a class="floating-contact" href="https://t.me/FG_MAFIAN" target="_blank" rel="noopener">✉ Contact owner</a><div id="toast" class="toast" role="status"></div><script src="/app.js"></script></body></html>

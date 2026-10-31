@@ -1,0 +1,4 @@
+name = "fg-mafian-apk-builder-pro"
+pages_build_output_dir = "."
+compatibility_date = "2026-10-31"
+compatibility_flags = ["nodejs_compat"]

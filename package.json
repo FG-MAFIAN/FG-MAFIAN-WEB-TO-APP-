@@ -1,0 +1,13 @@
+{
+  "name": "fg-mafian-web-to-app-builder",
+  "version": "1.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "node --check app.js && node --check builds.js && node --check account.js && node --check admin.js && node --check api/build.js && node --check api/status.js && node --check api/download.js && node --check api/health.js && node --check api/config.js && node --check api/admin.js && node --check api/maintenance.js && echo \"FG MAFIAN PRO source checks passed\""
+  }
+}
