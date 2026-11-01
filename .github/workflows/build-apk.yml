@@ -1,0 +1,501 @@
+name: Build Android APK
+run-name: FG MAFIAN APK ${{ inputs.build_id }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: Website URL to load inside the app
+        required: true
+        type: string
+      app_name:
+        description: Android app display name
+        required: true
+        type: string
+      app_id:
+        description: Android package ID
+        required: true
+        type: string
+      version_name:
+        description: Android version name
+        required: true
+        type: string
+        default: '1.0.0'
+      version_code:
+        description: Android version code
+        required: true
+        type: string
+        default: '1'
+      orientation:
+        description: Screen orientation
+        required: true
+        type: choice
+        options:
+          - portrait
+          - landscape
+          - any
+      theme_color:
+        description: Theme color
+        required: true
+        type: string
+      splash_color:
+        description: Splash background color
+        required: true
+        type: string
+      logo_data:
+        description: Optional compressed home-screen app logo (data URL)
+        required: false
+        type: string
+        default: ''
+      splash_logo_data:
+        description: Optional compressed opening-screen logo (data URL)
+        required: false
+        type: string
+        default: ''
+      app_description:
+        description: App description
+        required: false
+        type: string
+        default: ''
+      display_mode:
+        description: App display mode
+        required: true
+        type: choice
+        options:
+          - fullscreen
+          - standalone
+      pull_refresh:
+        description: Enable pull to refresh
+        required: true
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      nav_controls:
+        description: Show Android navigation controls
+        required: true
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      build_id:
+        description: Unique build correlation ID
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fg-mafian-apk-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout builder
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          cmdline-tools-version: 15859902
+          accept-android-sdk-licenses: true
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+
+      - name: Cache npm downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-node20-capacitor7-v1
+
+      - name: Cache reusable Android project
+        id: android-project-cache
+        uses: actions/cache@v4
+        with:
+          path: android
+          key: capacitor-android-${{ runner.os }}-${{ inputs.app_id }}-v3
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Create or reuse Capacitor Android project
+        env:
+          SITE_URL: ${{ inputs.site_url }}
+          APP_NAME: ${{ inputs.app_name }}
+          APP_ID: ${{ inputs.app_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p www
+          printf '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>Loading app...</body></html>' > www/index.html
+
+          cat > package.json <<'PKG'
+          {
+            "name": "fg-mafian-generated-app",
+            "version": "1.0.0",
+            "private": true,
+            "dependencies": {
+              "@capacitor/core": "^7.0.0",
+              "@capacitor/android": "^7.0.0"
+            },
+            "devDependencies": {
+              "@capacitor/cli": "^7.0.0"
+            }
+          }
+          PKG
+
+          npm install --prefer-offline --no-audit --no-fund
+
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const config = {
+            appId: process.env.APP_ID,
+            appName: process.env.APP_NAME,
+            webDir: 'www',
+            server: {
+              url: process.env.SITE_URL,
+              cleartext: false,
+              androidScheme: 'https'
+            }
+          };
+          fs.writeFileSync('capacitor.config.json', JSON.stringify(config, null, 2));
+          NODE
+
+          if [ -d android ]; then
+            echo "Using cached Android project for ${APP_ID}"
+            npx cap sync android
+          else
+            echo "Creating Android project for first build of ${APP_ID}"
+            npx cap add android
+          fi
+
+      - name: Set up Python for icon processing
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Apply app icon, orientation and colors
+        env:
+          ORIENTATION: ${{ inputs.orientation }}
+          APP_NAME: ${{ inputs.app_name }}
+          THEME_COLOR: ${{ inputs.theme_color }}
+          SPLASH_COLOR: ${{ inputs.splash_color }}
+          LOGO_DATA: ${{ inputs.logo_data }}
+          SPLASH_LOGO_DATA: ${{ inputs.splash_logo_data }}
+          APP_DESCRIPTION: ${{ inputs.app_description }}
+          DISPLAY_MODE: ${{ inputs.display_mode }}
+          PULL_REFRESH: ${{ inputs.pull_refresh }}
+          NAV_CONTROLS: ${{ inputs.nav_controls }}
+        run: |
+          python -m pip install --quiet pillow
+          python <<'PY'
+          import os, re, base64
+          from io import BytesIO
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          from PIL import Image, ImageOps
+
+          res = Path('android/app/src/main/res')
+          manifest = Path('android/app/src/main/AndroidManifest.xml')
+          android_ns = 'http://schemas.android.com/apk/res/android'
+          ET.register_namespace('android', android_ns)
+          A = '{' + android_ns + '}'
+
+          # Keep the selected orientation in the launcher activity.
+          tree = ET.parse(manifest)
+          root = tree.getroot()
+          orientation = os.environ.get('ORIENTATION', 'portrait')
+          orientation_value = {'portrait': 'portrait', 'landscape': 'landscape', 'any': 'fullSensor'}.get(orientation, 'portrait')
+          for activity in root.findall('.//activity'):
+              if activity.get(A + 'name', '').endswith('MainActivity'):
+                  activity.set(A + 'screenOrientation', orientation_value)
+          app = root.find('application')
+          if app is not None:
+              app.set(A + 'icon', '@mipmap/ic_launcher')
+              app.set(A + 'roundIcon', '@mipmap/ic_launcher')
+          tree.write(manifest, encoding='utf-8', xml_declaration=True)
+
+          # Ensure the selected app name is used as the Android launcher label.
+          app_name = os.environ.get('APP_NAME', 'FG MAFIAN')
+          strings_file = res / 'values' / 'strings.xml'
+          if strings_file.exists():
+              strings_tree = ET.parse(strings_file)
+              strings_root = strings_tree.getroot()
+          else:
+              strings_root = ET.Element('resources')
+              strings_tree = ET.ElementTree(strings_root)
+          for string_name in ('app_name', 'title_activity_main'):
+              app_name_node = strings_root.find("string[@name='" + string_name + "']")
+              if app_name_node is None:
+                  app_name_node = ET.SubElement(strings_root, 'string', {'name': string_name})
+              app_name_node.text = app_name
+          description = os.environ.get('APP_DESCRIPTION', '')
+          description_node = strings_root.find("string[@name='app_description']")
+          if description_node is None:
+              description_node = ET.SubElement(strings_root, 'string', {'name': 'app_description'})
+          description_node.text = description
+          strings_tree.write(strings_file, encoding='utf-8', xml_declaration=True)
+
+          # Set the Android application description metadata.
+          if app is not None:
+              app.set(A + 'description', '@string/app_description')
+          tree.write(manifest, encoding='utf-8', xml_declaration=True)
+
+          # Update standard app theme colors without removing other resources.
+          theme = os.environ.get('THEME_COLOR', '#3978ff')
+          splash = os.environ.get('SPLASH_COLOR', '#070914')
+          colors_file = res / 'values' / 'colors.xml'
+          colors_file.parent.mkdir(parents=True, exist_ok=True)
+          if colors_file.exists():
+              colors_tree = ET.parse(colors_file)
+              colors_root = colors_tree.getroot()
+          else:
+              colors_root = ET.Element('resources')
+              colors_tree = ET.ElementTree(colors_root)
+          color_values = {
+              'colorPrimary': theme,
+              'colorPrimaryDark': theme,
+              'colorAccent': theme,
+              'splash_background': splash
+          }
+          for name, value in color_values.items():
+              node = colors_root.find("color[@name='" + name + "']")
+              if node is None:
+                  node = ET.SubElement(colors_root, 'color', {'name': name})
+              node.text = value
+          colors_tree.write(colors_file, encoding='utf-8', xml_declaration=True)
+
+          # Apply selected colors to theme items when those items exist.
+          for values_dir in res.glob('values*'):
+              for xml_file in list(values_dir.glob('styles.xml')) + list(values_dir.glob('themes.xml')):
+                  try:
+                      style_tree = ET.parse(xml_file)
+                  except ET.ParseError:
+                      continue
+                  changed = False
+                  for style in style_tree.getroot().findall('style'):
+                      is_launch_style = 'Launch' in style.attrib.get('name', '')
+                      for item in style.findall('item'):
+                          name = item.attrib.get('name', '')
+                          if name in ('colorPrimary', 'colorPrimaryDark', 'colorAccent', 'android:colorPrimary', 'android:colorPrimaryDark', 'android:colorAccent', 'android:statusBarColor', 'android:navigationBarColor'):
+                              item.text = theme
+                              changed = True
+                          elif name in ('android:windowSplashScreenBackground', 'windowSplashScreenBackground'):
+                              item.text = '@color/splash_background'
+                              changed = True
+                          elif is_launch_style and name in ('android:background', 'android:windowBackground'):
+                              item.text = '@color/splash_background'
+                              changed = True
+                  if changed:
+                      style_tree.write(xml_file, encoding='utf-8', xml_declaration=True)
+
+          # Generate density-specific launcher icons from the submitted image.
+          data = os.environ.get('LOGO_DATA', '').strip()
+          if data:
+              if ',' not in data:
+                  raise SystemExit('The uploaded logo data is invalid.')
+              header, encoded = data.split(',', 1)
+              if not header.startswith('data:image/'):
+                  raise SystemExit('The uploaded logo must be an image.')
+              raw = base64.b64decode(encoded, validate=True)
+              source = Image.open(BytesIO(raw)).convert('RGBA')
+              source.thumbnail((512, 512), Image.Resampling.LANCZOS)
+              sizes = {'mdpi': 48, 'hdpi': 72, 'xhdpi': 96, 'xxhdpi': 144, 'xxxhdpi': 192}
+              for density, size in sizes.items():
+                  folder = res / ('mipmap-' + density)
+                  folder.mkdir(parents=True, exist_ok=True)
+                  canvas = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+                  icon = ImageOps.contain(source, (int(size * 0.88), int(size * 0.88)), method=Image.Resampling.LANCZOS)
+                  canvas.alpha_composite(icon, ((size - icon.width) // 2, (size - icon.height) // 2))
+                  canvas.save(folder / 'ic_launcher.png', optimize=True)
+              # Remove adaptive XML icons so Android uses the supplied density PNGs.
+              for xml_icon in [res / 'mipmap-anydpi-v26' / 'ic_launcher.xml', res / 'mipmap-anydpi-v26' / 'ic_launcher_round.xml']:
+                  if xml_icon.exists():
+                      xml_icon.unlink()
+
+          # Add an independent centered image to the Android opening screen.
+          splash_data = os.environ.get('SPLASH_LOGO_DATA', '').strip()
+          if splash_data:
+              if ',' not in splash_data:
+                  raise SystemExit('The opening-screen logo data is invalid.')
+              header, encoded = splash_data.split(',', 1)
+              if not header.startswith('data:image/'):
+                  raise SystemExit('The opening-screen logo must be an image.')
+              raw = base64.b64decode(encoded, validate=True)
+              splash_source = Image.open(BytesIO(raw)).convert('RGBA')
+              splash_source.thumbnail((384, 384), Image.Resampling.LANCZOS)
+              drawable = res / 'drawable-nodpi'
+              drawable.mkdir(parents=True, exist_ok=True)
+              splash_source.save(drawable / 'splash_logo.png', optimize=True)
+
+              # Pre-Android 12 launch screen: solid selected background + centered logo.
+              drawable_xml = res / 'drawable'
+              drawable_xml.mkdir(parents=True, exist_ok=True)
+              splash_layer = drawable_xml / 'fg_mafian_splash.xml'
+              splash_layer.write_text('''<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:drawable="@color/splash_background" />
+              <item android:gravity="center"><bitmap android:src="@drawable/splash_logo" android:gravity="center" /></item>
+          </layer-list>''', encoding='utf-8')
+
+              # Android 12+ uses the dedicated system splash-screen icon attribute.
+              v31 = res / 'values-v31'
+              v31.mkdir(parents=True, exist_ok=True)
+              styles31 = v31 / 'styles.xml'
+              if styles31.exists():
+                  try:
+                      styles_tree = ET.parse(styles31)
+                      styles_root = styles_tree.getroot()
+                  except ET.ParseError:
+                      styles_root = ET.Element('resources')
+                      styles_tree = ET.ElementTree(styles_root)
+              else:
+                  styles_root = ET.Element('resources')
+                  styles_tree = ET.ElementTree(styles_root)
+              launch_styles = [st for st in styles_root.findall('style') if 'Launch' in st.attrib.get('name', '')]
+              if not launch_styles:
+                  launch_styles = [ET.SubElement(styles_root, 'style', {'name': 'AppTheme.NoActionBarLaunch', 'parent': 'Theme.SplashScreen'})]
+              for style in launch_styles:
+                  for item_name, value in [('android:windowSplashScreenBackground', '@color/splash_background'), ('android:windowSplashScreenAnimatedIcon', '@drawable/splash_logo'), ('postSplashScreenTheme', '@style/AppTheme.NoActionBar')]:
+                      item = style.find("item[@name='" + item_name + "']")
+                      if item is None:
+                          item = ET.SubElement(style, 'item', {'name': item_name})
+                      item.text = value
+              styles_tree.write(styles31, encoding='utf-8', xml_declaration=True)
+
+              # Point the launch activity to the generated centered-image drawable on older Android versions.
+              manifest_tree = ET.parse(manifest)
+              manifest_root = manifest_tree.getroot()
+              for activity in manifest_root.findall('.//activity'):
+                  if activity.get(A + 'name', '').endswith('MainActivity'):
+                      activity.set(A + 'theme', '@style/AppTheme.NoActionBarLaunch')
+              manifest_tree.write(manifest, encoding='utf-8', xml_declaration=True)
+              # Set the pre-Android 12 launch background on the base launch theme too.
+              base_styles = res / 'values' / 'styles.xml'
+              if base_styles.exists():
+                  try:
+                      base_tree = ET.parse(base_styles)
+                      base_root = base_tree.getroot()
+                      for style in base_root.findall('style'):
+                          if 'Launch' in style.attrib.get('name', ''):
+                              item = style.find("item[@name='android:windowBackground']")
+                              if item is None:
+                                  item = ET.SubElement(style, 'item', {'name': 'android:windowBackground'})
+                              item.text = '@drawable/fg_mafian_splash'
+                      base_tree.write(base_styles, encoding='utf-8', xml_declaration=True)
+                  except ET.ParseError:
+                      pass
+
+          # Apply fullscreen/system navigation and native pull-to-refresh behavior.
+          main_activity = next(Path('android/app/src/main').rglob('MainActivity.java'), None)
+          if main_activity:
+              source = main_activity.read_text(encoding='utf-8')
+              if 'FG_MAFIAN_NATIVE_SETTINGS' not in source:
+                  imports = 'import android.os.Bundle;\nimport android.view.View;\nimport android.view.WindowManager;\nimport android.view.MotionEvent;\nimport android.webkit.WebView;\n'
+                  package_end = source.find(';')
+                  source = source[:package_end + 1] + '\n' + imports + source[package_end + 1:]
+                  method = '''
+          // FG_MAFIAN_NATIVE_SETTINGS
+          @Override
+          public void onCreate(Bundle savedInstanceState) {
+              super.onCreate(savedInstanceState);
+              final boolean fullscreen = "${{ inputs.display_mode }}".equals("fullscreen");
+              final boolean navControls = "${{ inputs.nav_controls }}".equals("true");
+              if (fullscreen) {
+                  getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                  if (!navControls) {
+                      getWindow().getDecorView().setSystemUiVisibility(
+                          View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                          View.SYSTEM_UI_FLAG_FULLSCREEN |
+                          View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                          View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                      );
+                  }
+              }
+              final boolean pullRefresh = "${{ inputs.pull_refresh }}".equals("true");
+              if (pullRefresh && getBridge() != null && getBridge().getWebView() != null) {
+                  final WebView webView = getBridge().getWebView();
+                  final float[] startY = new float[] {0f};
+                  webView.setOnTouchListener((view, event) -> {
+                      if (event.getAction() == MotionEvent.ACTION_DOWN) startY[0] = event.getY();
+                      else if (event.getAction() == MotionEvent.ACTION_UP && webView.getScrollY() == 0 &&
+                               event.getY() - startY[0] > 150f) webView.reload();
+                      return false;
+                  });
+              }
+          }
+          '''
+                  pos = source.rfind('}')
+                  source = source[:pos] + method + '\n' + source[pos:]
+                  main_activity.write_text(source, encoding='utf-8')
+          PY
+
+      - name: Apply Android version details
+        env:
+          VERSION_NAME: ${{ inputs.version_name }}
+          VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          python <<'PY'
+          import os, re
+          from pathlib import Path
+          gradle = Path('android/app/build.gradle')
+          if not gradle.exists():
+              gradle = Path('android/app/build.gradle.kts')
+          if not gradle.exists():
+              raise SystemExit('Android app Gradle file was not found.')
+          source = gradle.read_text()
+          version_name = os.environ['VERSION_NAME']
+          version_code = os.environ['VERSION_CODE']
+          if gradle.suffix == '.kts':
+              source, n1 = re.subn(r'versionCode\s*=\s*\d+', f'versionCode = {version_code}', source, count=1)
+              source, n2 = re.subn(r'versionName\s*=\s*"[^"]*"', f'versionName = "{version_name}"', source, count=1)
+          else:
+              source, n1 = re.subn(r'versionCode\s+\d+', f'versionCode {version_code}', source, count=1)
+              source, n2 = re.subn(r'versionName\s+"[^"]*"', f'versionName "{version_name}"', source, count=1)
+          if not n1 or not n2:
+              raise SystemExit('Could not locate versionCode/versionName in the Android Gradle file.')
+          gradle.write_text(source)
+          PY
+
+      - name: Build installable debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew --build-cache assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk ../fg-mafian-app.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fg-mafian-app-${{ github.run_id }}
+          path: fg-mafian-app.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish direct APK download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-build-${{ github.run_id }}
+          name: FG MAFIAN APK Build ${{ github.run_id }}
+          body: |
+            Automatically generated Android APK.
+            Workflow Run ID: ${{ github.run_id }}
+          files: fg-mafian-app.apk
+          overwrite_files: true
+          make_latest: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
