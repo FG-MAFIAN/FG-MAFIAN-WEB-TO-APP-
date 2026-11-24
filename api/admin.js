@@ -20,12 +20,13 @@ export default async function handler(req, res) {
     const root = SUPABASE_URL.replace(/\/$/, '');
     const key = SUPABASE_SERVICE_ROLE_KEY;
     if (req.method === 'GET') {
-      const [profilesRes, projectsRes] = await Promise.all([
+      const [profilesRes, projectsRes, logsRes] = await Promise.all([
         supabaseRequest(root, key, 'profiles?select=id,email,display_name,role,plan,is_blocked,created_at&order=created_at.desc&limit=200'),
-        supabaseRequest(root, key, 'projects?select=id,user_id,name,package_id,created_at&order=created_at.desc&limit=100')
+        supabaseRequest(root, key, 'projects?select=id,user_id,name,package_id,created_at&order=created_at.desc&limit=100'),
+        supabaseRequest(root, key, 'system_logs?select=id,level,source,message,path,created_at,user_id&order=created_at.desc&limit=100')
       ]);
       if (!profilesRes.ok || !projectsRes.ok) throw new Error('Could not load admin data. Run supabase/schema.sql in your Supabase SQL editor.');
-      return json(res, 200, { ok: true, admin: user.email, users: await profilesRes.json(), projects: await projectsRes.json() });
+      return json(res, 200, { ok: true, admin: user.email, users: await profilesRes.json(), projects: await projectsRes.json(), systemLogs: logsRes.ok ? await logsRes.json() : [] });
     }
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     if (body.action === 'user-update') {
