@@ -1,4 +1,4 @@
-// FG MAFIAN Android APK builder frontend.
+// AppForge Android app builder.
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -93,7 +93,7 @@
       const imageData = splashLogoData || logoData;
       logo.style.backgroundImage = imageData ? `url("${imageData}")` : '';
       logo.style.backgroundColor = imageData ? 'transparent' : 'rgba(255,255,255,.12)';
-      logo.textContent = imageData ? '' : 'FM';
+      logo.textContent = imageData ? '' : 'A';
       logo.style.backgroundSize = 'contain';
       logo.style.backgroundPosition = 'center';
       logo.style.backgroundRepeat = 'no-repeat';
@@ -140,7 +140,7 @@
 
   $('logoFile')?.addEventListener('change', async event => {
     const file = event.target.files?.[0];
-    if (!file) { logoData = ''; if ($('iconPreview')) { $('iconPreview').style.backgroundImage = ''; $('iconPreview').textContent = 'FM'; $('iconPreview').style.background = $('themeColor')?.value || '#475569'; } updateSplashPreview(); return; }
+    if (!file) { logoData = ''; if ($('iconPreview')) { $('iconPreview').style.backgroundImage = ''; $('iconPreview').textContent = 'A'; $('iconPreview').style.background = $('themeColor')?.value || '#475569'; } updateSplashPreview(); return; }
     try {
       logoData = await compressLogo(file);
       if ($('iconPreview')) {
@@ -433,7 +433,7 @@
       const siteUrl = normalizedUrl($('siteUrl')?.value.trim() || '');
       const appName = $('appName')?.value.trim() || '';
       if (!appName) throw new Error('Enter an app name.');
-      const appId = $('packageId')?.value.trim() || 'com.fgmafian.myapp';
+      const appId = $('packageId')?.value.trim() || 'com.appforge.myapp';
       if (!/^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(appId) || appId.length > 180) {
         throw new Error('Package ID must look like com.company.app and use valid letters, numbers or underscores.');
       }
