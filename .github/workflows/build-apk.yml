@@ -1,5 +1,5 @@
 name: Build Android APK
-run-name: FG MAFIAN APK ${{ inputs.build_id }}
+run-name: AppForge APK ${{ inputs.build_id }}
 
 on:
   workflow_dispatch:
@@ -533,13 +533,13 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew --build-cache assembleDebug
-          cp app/build/outputs/apk/debug/app-debug.apk ../fg-mafian-app.apk
+          cp app/build/outputs/apk/debug/app-debug.apk ../appforge-app.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fg-mafian-app-${{ github.run_id }}
-          path: fg-mafian-app.apk
+          name: appforge-app-${{ github.run_id }}
+          path: appforge-app.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -547,11 +547,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-build-${{ github.run_id }}
-          name: FG MAFIAN APK Build ${{ github.run_id }}
+          name: AppForge APK Build ${{ github.run_id }}
           body: |
             Automatically generated Android APK.
             Workflow Run ID: ${{ github.run_id }}
-          files: fg-mafian-app.apk
+          files: appforge-app.apk
           overwrite_files: true
           make_latest: false
         env:
