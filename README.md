@@ -131,3 +131,19 @@ The SQL deliberately prevents normal users from changing their own `role`, `plan
 ### Additional Vercel environment variables
 
 In addition to the existing GitHub and Upstash variables, configure `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_EMAILS`. Never place `SUPABASE_SERVICE_ROLE_KEY` or `GITHUB_TOKEN` in frontend JavaScript or public repository files. The `/api/health` endpoint reports whether the account/admin configuration is present, but does not expose secret values.
+
+
+## Expanded Android app settings
+
+The Create App page exposes the Android settings that are currently implemented by the build workflow:
+
+- App name, Android application ID, version name, version code and description.
+- Home-screen launcher icon and separate splash-screen logo.
+- App theme, splash background and Android status-bar colors.
+- Portrait, landscape or sensor-based orientation.
+- Fullscreen or standalone display behavior.
+- Pull-to-refresh and Android navigation visibility.
+- Status-bar icon contrast (light or dark icons).
+- Optional pinch-to-zoom, keep-screen-awake and screenshot/screen-recording protection.
+
+These options are validated by `api/build.js`, passed to the GitHub Actions workflow, and applied to the generated Android project. The app loads the website from its live HTTPS URL; it is not an offline website exporter. The generated debug APK is suitable for testing and direct installation, while Play Store distribution requires a properly signed release build.
