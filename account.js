@@ -13,7 +13,7 @@ function setMode(next) {
   $('displayNameWrap').classList.toggle('hidden', mode !== 'signup');
   $('otpWrap').classList.add('hidden');
   $('resendCode').classList.add('hidden');
-  $('password').classList.remove('hidden');
+  $('passwordWrap').classList.remove('hidden');
   $('password').required = true;
   $('authSubmit').textContent = mode === 'login' ? 'Sign in' : 'Create account';
   $('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
@@ -27,8 +27,7 @@ async function init() {
     const { data } = await supabase.auth.getSession();
     if (data.session) await showProfile(data.session.user);
     supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) showProfile(session.user);
-      else hideProfile();
+      setTimeout(() => { if (session?.user) showProfile(session.user); else hideProfile(); }, 0);
     });
   } catch { message('Something went wrong. Please try again later.', true); }
 }
@@ -83,7 +82,7 @@ $('authForm').addEventListener('submit', async event => {
       if (error) throw error;
       pendingEmail = email; verifyingSignup = true;
       $('otpWrap').classList.remove('hidden'); $('resendCode').classList.remove('hidden');
-      $('password').classList.add('hidden'); $('password').required = false;
+      $('passwordWrap').classList.add('hidden'); $('password').required = false;
       $('authSubmit').textContent = 'Verify email';
       message('We sent a verification code to your email. Enter it below to finish creating your account.');
     } else {
