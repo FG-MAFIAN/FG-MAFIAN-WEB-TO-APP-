@@ -51,3 +51,18 @@ revoke update on public.profiles from authenticated;
 grant select on public.profiles to authenticated;
 grant update (display_name) on public.profiles to authenticated;
 grant select, insert, update, delete on public.projects to authenticated;
+
+
+-- Private application error records. Only the service-role API can read or write these.
+create table if not exists public.system_logs (
+  id bigint generated always as identity primary key,
+  level text not null default 'error',
+  source text not null default 'website',
+  message text not null,
+  path text not null default '/',
+  user_id uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+create index if not exists system_logs_created_at_idx on public.system_logs(created_at desc);
+alter table public.system_logs enable row level security;
+revoke all on public.system_logs from anon, authenticated;
