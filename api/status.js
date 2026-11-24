@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     }
 
     if (run.path !== '.github/workflows/build-apk.yml' || run.event !== 'workflow_dispatch') {
-      return res.status(403).json({ error: 'The requested run does not belong to the FG MAFIAN APK workflow.' });
+      return res.status(403).json({ error: 'Something went wrong. Please try again.' });
     }
     const common = { runId: run.id, status: run.status };
     if (run.status === 'queued' || run.status === 'waiting' || run.status === 'requested' || run.status === 'pending') {
