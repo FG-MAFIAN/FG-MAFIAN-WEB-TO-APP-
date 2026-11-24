@@ -161,7 +161,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: android
-          key: capacitor-android-${{ runner.os }}-${{ inputs.app_id }}-v3
+          key: capacitor-android-${{ runner.os }}-${{ inputs.app_id }}-v4
 
       - name: Set up Gradle cache
         uses: gradle/actions/setup-gradle@v4
