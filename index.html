@@ -5,8 +5,8 @@
     <h1>Welcome to <span>your app studio.</span></h1>
     <p class="muted">Sign in or create a free account to keep your projects and builds together across devices.</p>
     <div class="hero-actions" style="justify-content:center;gap:10px;margin-top:22px">
-      <a class="btn btn-primary" href="/account#login">Sign in</a>
-      <a class="btn btn-ghost" href="/account#signup">Create account</a>
+      <a class="btn btn-primary" href="/account#login" class="welcome-auth-choice">Sign in</a>
+      <a class="btn btn-ghost" href="/account#signup" class="welcome-auth-choice">Create account</a>
     </div>
     <button class="btn btn-ghost full" id="continueAsGuest" type="button" style="margin-top:12px">Sign in later</button>
     <small class="tiny">You can continue as a guest and create an account whenever you're ready.</small>
@@ -19,6 +19,7 @@
   try {
     if(localStorage.getItem('fgmafian_welcome_done')==='1') gate.classList.add('dismissed');
   } catch {}
+  document.querySelectorAll('.welcome-auth-choice').forEach(function(link){link.addEventListener('click',function(){try{localStorage.setItem('fgmafian_welcome_done','1')}catch{}})});
   skip.addEventListener('click',function(){
     try { localStorage.setItem('fgmafian_welcome_done','1'); } catch {}
     gate.classList.add('dismissed');
