@@ -247,3 +247,52 @@ html[data-theme="light"] .toast { background: #172033; color: #fff; }
 .theme-toggle:hover { border-color: #168bff; }
 @media (max-width: 900px) { .theme-toggle { margin-left: auto; } }
 @media (max-width: 620px) { .theme-toggle { font-size: 9px; padding: 8px 9px; } }
+
+
+/* Professional product interface */
+:root{--bg:#f5f7fa;--panel:#fff;--line:#e2e7ee;--text:#182230;--muted:#667085;--green:#315b7d;--cyan:#6b8298;--blue:#315b7d;--mono:Inter,system-ui,sans-serif}
+html{color-scheme:light}
+body,html[data-theme="dark"] body{background:#f5f7fa;color:#182230;font-family:Inter,system-ui,sans-serif}
+.backdrop,.backdrop:before,.backdrop:after,body:after{display:none!important}
+.topbar,footer{background:#fff!important;color:#344054!important;border-color:#e2e7ee!important;backdrop-filter:none!important;box-shadow:0 1px 3px rgba(16,24,40,.04)}
+.topbar{height:auto;min-height:72px;padding:12px clamp(18px,5vw,72px);gap:18px;flex-wrap:wrap}
+.brand{letter-spacing:0;color:#182230}.brand small{color:#667085;font:10px Inter,sans-serif;letter-spacing:.08em}
+.brand-mark,.brand-mark.small{background:#34495e!important;color:#fff!important;border:0!important;box-shadow:none!important;border-radius:9px}
+.multi-nav,.topbar nav{font:500 13px Inter,sans-serif;text-transform:none;color:#475467;gap:clamp(10px,1.5vw,22px)}
+.multi-nav a{padding:9px 2px;border-bottom:2px solid transparent}
+.multi-nav a:hover,.multi-nav a:focus,.multi-nav a.nav-home{color:#182230;background:transparent;border-color:#34495e;text-shadow:none}
+.contact-mini,.theme-toggle{font:600 12px Inter,sans-serif;text-transform:none;color:#344054;background:#fff;border:1px solid #d0d5dd;border-radius:8px;box-shadow:none}
+.hero{max-width:1160px;min-height:520px;padding:76px 24px 64px;gap:56px}
+.hero h1,.welcome-card h1{font:700 clamp(38px,5vw,58px)/1.12 Inter,system-ui,sans-serif;letter-spacing:-.045em;color:#182230;text-shadow:none}
+.hero h1 span,.welcome-card h1 span,.pro-main h1 span{color:#315b7d;text-shadow:none}
+.status,.eyebrow{font:600 11px Inter,sans-serif;letter-spacing:.08em;color:#475467}
+.status{border:0;background:#eef2f6;border-radius:999px;box-shadow:none}
+.status i{background:#47836c;box-shadow:none}
+.lead,.muted,.steps p{color:#667085}
+.btn{font:600 13px Inter,sans-serif;letter-spacing:0;text-transform:none;border-radius:8px;min-height:44px;padding:12px 18px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(16,24,40,.08)}
+.btn-primary{background:#34495e;border:1px solid #34495e;color:#fff;box-shadow:none}
+.btn-ghost{color:#344054;background:#fff;border:1px solid #d0d5dd}
+.glass,.form-card,.output-card,.notice,.steps article,.game-card{background:#fff!important;color:#182230;border:1px solid #e2e7ee;box-shadow:0 4px 16px rgba(16,24,40,.045);backdrop-filter:none!important}
+.preview-card{background:#f0f3f6!important}
+.phone{border-color:#667085;background:#fff;box-shadow:none}
+.phone-notch,.mock-button{background:#667085}
+.mock-icon,.app-preview-icon{background:#34495e;color:#fff}
+.floating-chip{background:#fff;color:#344054;border:1px solid #e2e7ee;box-shadow:0 4px 12px rgba(16,24,40,.06)}
+.steps article>span,.notice b,.steps article>a{color:#315b7d}
+.form-card label{color:#344054;font:600 13px Inter,sans-serif;letter-spacing:0}
+.form-card input:not([type=checkbox]),.form-card textarea,.form-card select{background:#fff;color:#182230;border:1px solid #d0d5dd;border-radius:8px;font:14px Inter,sans-serif}
+.form-card input:focus,.form-card textarea:focus,.form-card select:focus{border-color:#667085;box-shadow:0 0 0 3px rgba(52,73,94,.1)}
+.hint,.fine-print,.tiny{color:#667085}
+.form-title h3,.section-heading h2,.output-card h3,.pro-main h1{color:#182230}
+.step{background:#f0f3f6;border:1px solid #e2e7ee;color:#34495e}
+.config-list{border-color:#e2e7ee}.config-list div{border-color:#eef0f3}.config-list span{color:#667085}.config-list b{color:#344054}
+.saved-project,.admin-user{background:#f8fafc;border-color:#e2e7ee}
+footer>strong{color:#34495e}
+.floating-contact{background:#34495e;color:#fff;border-radius:8px;box-shadow:0 4px 14px rgba(16,24,40,.12);font:600 12px Inter,sans-serif;text-transform:none}
+.welcome-screen{background:rgba(16,24,40,.48);backdrop-filter:blur(5px)}
+.welcome-card{border-radius:14px;padding:36px}
+.toast{background:#182230;border:0;color:#fff;font:13px Inter,sans-serif;border-radius:8px}
+.maintenance-notice{background:#fffaeb;color:#7a4b00;border-color:#fedf89;border-radius:10px}
+html[data-theme="light"] .glass,html[data-theme="light"] .form-card,html[data-theme="light"] .output-card,html[data-theme="light"] .notice,html[data-theme="light"] .steps article{background:#fff!important}
+@media(max-width:850px){.hero{padding-top:52px}.topbar nav{display:none}.topbar{justify-content:space-between}.theme-toggle{margin-left:auto}}
