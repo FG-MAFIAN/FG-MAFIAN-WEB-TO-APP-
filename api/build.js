@@ -86,7 +86,7 @@ export default async function handler(req, res) {
     if (!authResponse.ok) return fail(res, 401, 'Your session has expired. Please sign in again.');
     const account = await authResponse.json();
     if (SUPABASE_SERVICE_ROLE_KEY) {
-      const profileResponse = await fetch(`${SUPABASE_URL.replace(/\\/$/, '')}/rest/v1/profiles?id=eq.${encodeURIComponent(account.id)}&select=is_blocked&limit=1`, {
+      const profileResponse = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/profiles?id=eq.${encodeURIComponent(account.id)}&select=is_blocked&limit=1`, {
         headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
       });
       if (profileResponse.ok) {
