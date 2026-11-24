@@ -1,1 +1,89 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#f5f7fa"><meta name="description" content="Create and manage Android apps from your website with AppForge."><title>Docs | AppForge</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css"><script>(function(){try{var t=localStorage.getItem("fgmafian_theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;else if(matchMedia("(prefers-color-scheme: light)").matches)document.documentElement.dataset.theme="light";}catch(e){}})();</script><script src="/theme.js" defer></script></head><body><div class="backdrop"></div><header class="topbar"><a class="brand" href="/" aria-label="AppForge home"><span class="brand-mark small">A</span><span>AppForge<small>WEBSITE TO ANDROID</small></span></a><nav class="multi-nav"><details class="home-menu"><summary>Home</summary><div class="home-menu-items"><a href="/">Home</a><a href="/create-app">Create App</a><a href="/builds">My Apps</a><a href="/account">Account</a><a href="/docs">Guide</a><a href="/about">About</a></div></details></nav><a class="contact-mini" href="/account">Account</a></header><main class="builder-section"><div class="section-heading"><p class="eyebrow">HELP CENTER</p><h2>Documentation</h2><p class="muted">How to create and install an app with AppForge.</p></div><div class="steps"><article class="glass"><span>01</span><h3>Enter your website</h3><p>Use a public HTTPS website URL. Some websites block being displayed inside mobile apps, so test the preview first.</p></article><article class="glass"><span>02</span><h3>Customize the app</h3><p>Set the app name, Android package ID, version name and version code, description, launcher icon, splash logo, theme and splash colors, orientation, display mode, status-bar color and icon style, pull-to-refresh, navigation visibility, pinch-to-zoom, keep-awake behavior and screenshot protection.</p></article><article class="glass"><span>03</span><h3>Build the APK</h3><p>Tap Build Installable APK. The connected GitHub Actions workflow compiles the Android application in the cloud.</p></article></div><div class="notice glass" style="max-width:900px;margin:28px auto"><b>Installing on Android</b><p>When the build completes, download the APK on your Android device, open it, and allow installation from your browser or file manager if Android asks. Only install APKs from sources you trust.</p><b>Sharing your app</b><p>After a successful build, use “Copy public download link” to copy a shareable URL. Anyone who has that URL can download the APK without signing in. The link stays available while the corresponding GitHub release and asset remain published.</p><b>Build requirements</b><p>The site must be connected to GitHub Actions and configured Cloudflare Pages environment variables. This builder creates Android APKs that load the supplied live HTTPS website, so the app needs internet access and the website must permit WebView embedding. Keep-awake, zoom, status-bar styling and screenshot protection are native Android settings. iPhone/iPad installation needs a separate Apple build and signing process.</p></div></main><footer><div class="brand"><span class="brand-mark small">A</span><span>AppForge<small>WEBSITE TO ANDROID</small></span></div><p>A straightforward way to turn a website into an Android app.</p><div class="footer-links"><a href="/docs">Help guide</a><a href="/account">Account</a></div><strong>AppForge</strong></footer><aside class="channel-invite" id="channelInvite" aria-label="Channel updates" hidden><div class="channel-invite-card"><button type="button" class="channel-invite-close" id="channelInviteClose" aria-label="Close">×</button><p class="eyebrow">UPDATES</p><h2>Stay up to date</h2><p>Join the FG official channel for product news, useful tips and new features.</p><div class="channel-invite-actions"><a class="btn btn-primary" href="https://t.me/mafian_tech" target="_blank" rel="noopener">Join official channel</a><button type="button" class="btn btn-ghost" id="channelInviteLater">Not now</button><button type="button" class="btn btn-ghost" id="channelInviteNever">Don't show again</button></div></div></aside><script>(function(){try{if(location.pathname==='/admin'||location.pathname==='/admin.html'||localStorage.getItem('appforge_channel_never')==='1')return;var key='appforge_channel_last';var last=Number(localStorage.getItem(key)||0);var delay=last?Math.max(0,1200000-(Date.now()-last)):1200000;function hide(){var box=document.getElementById('channelInvite');if(box)box.hidden=true;}function show(){if(localStorage.getItem('appforge_channel_never')==='1')return;var box=document.getElementById('channelInvite');if(!box)return;box.hidden=false;localStorage.setItem(key,String(Date.now()));}function later(){hide();}function never(){localStorage.setItem('appforge_channel_never','1');hide();}document.getElementById('channelInviteClose')?.addEventListener('click',later);document.getElementById('channelInviteLater')?.addEventListener('click',later);document.getElementById('channelInviteNever')?.addEventListener('click',never);setTimeout(function(){show();setInterval(show,1200000);},delay);}catch(e){}})();</script></body></html>
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#f5f7fa"><meta name="description" content="Create and manage Android apps from your website with AppForge."><title>Docs | AppForge</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css"><script>(function(){try{var t=localStorage.getItem("fgmafian_theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;else if(matchMedia("(prefers-color-scheme: light)").matches)document.documentElement.dataset.theme="light";}catch(e){}})();</script><script src="/theme.js" defer></script></head><body><div class="backdrop"></div><header class="topbar"><a class="brand" href="/" aria-label="AppForge home"><span class="brand-mark small">A</span><span>AppForge<small>WEBSITE TO ANDROID</small></span></a><nav class="multi-nav"><details class="home-menu"><summary>Home</summary><div class="home-menu-items"><a href="/">Home</a><a href="/create-app">Create App</a><a href="/builds">My Apps</a><a href="/account">Account</a><a href="/docs">Guide</a><a href="/about">About</a></div></details></nav><a class="contact-mini" href="/account">Account</a></header><main class="builder-section">
+  <div class="section-heading">
+    <p class="eyebrow">APPFORGE HELP CENTER</p>
+    <h1>How to create your Android app</h1>
+    <p class="muted">Follow these steps from your first sign-in to installing the finished APK. You do not need to know how to code.</p>
+  </div>
+
+  <section class="form-card glass" style="max-width:940px;margin:0 auto 22px">
+    <p class="eyebrow">BEFORE YOU START</p>
+    <h2>What you need</h2>
+    <ul>
+      <li>A website that is already online and opens with <b>https://</b>.</li>
+      <li>An AppForge account. Create one with your email and verify the code sent to your inbox.</li>
+      <li>An Android phone or computer to download the APK after the build.</li>
+      <li>Optional: a square app icon and a separate opening-screen logo.</li>
+    </ul>
+    <p class="fine-print">AppForge packages your live website inside an Android app. It does not copy your website files or make the website work offline. The app needs an internet connection.</p>
+  </section>
+
+  <div class="steps">
+    <article class="glass">
+      <span>01</span><h3>Create your account</h3>
+      <p>Open Account, choose Create account, enter your name, email and password, then enter the verification code sent to your email. If you already have an account, choose Sign in.</p>
+      <a href="/account">Open Account ↗</a>
+    </article>
+    <article class="glass">
+      <span>02</span><h3>Enter your website address</h3>
+      <p>Open Create App and paste the full public HTTPS address, for example https://example.com. Tap Preview website to check that it opens. A site may work in your browser but block embedded WebView apps; if it does, its owner must allow the app's WebView access.</p>
+      <a href="/create-app">Open Create App ↗</a>
+    </article>
+    <article class="glass">
+      <span>03</span><h3>Set up your app identity</h3>
+      <p>Choose the name people will see under the Android icon. Keep the package ID in a format such as com.company.myapp; it must be unique for each different app. Set a version name and a positive version code. Increase the version code when publishing an update to an existing app.</p>
+    </article>
+    <article class="glass">
+      <span>04</span><h3>Customize the appearance and behavior</h3>
+      <p>Upload an optional home-screen icon and opening-screen logo, then choose your colors, screen orientation and display mode. The advanced switches control pull-to-refresh, navigation buttons, zoom, keeping the screen awake and screenshot protection. The live phone preview shows the opening-screen logo and background.</p>
+    </article>
+    <article class="glass">
+      <span>05</span><h3>Build and follow progress</h3>
+      <p>Tap Build installable APK once. AppForge sends the settings to its secure build service, and GitHub builds the Android app in the cloud. Keep the build page open to see progress, or return later through My Apps. A build can take several minutes.</p>
+    </article>
+    <article class="glass">
+      <span>06</span><h3>Download and install the APK</h3>
+      <p>When the status says APK ready, tap Download APK. On Android, open the downloaded file and follow the installation prompts. If Android asks, allow your browser or file manager to install apps from that source. Only install APKs you trust.</p>
+    </article>
+  </div>
+
+  <section class="form-card glass" style="max-width:940px;margin:22px auto">
+    <p class="eyebrow">YOUR WORKSPACE</p>
+    <h2>Find your saved apps</h2>
+    <p>Sign in and open My Apps to see projects saved to your account. Builds in progress refresh automatically while the page is open. You can also tap Refresh now. Build history is private to your account.</p>
+    <div class="hero-actions"><a class="btn btn-primary" href="/builds">Open My Apps</a><a class="btn btn-ghost" href="/account">Manage account</a></div>
+  </section>
+
+  <section class="form-card glass" style="max-width:940px;margin:22px auto">
+    <p class="eyebrow">SETTINGS EXPLAINED</p>
+    <h2>What each Android option does</h2>
+    <div class="config-list">
+      <div><span>Package ID</span><b>Unique Android identifier, e.g. com.brand.store</b></div>
+      <div><span>Version name / code</span><b>Visible release label / Android update number</b></div>
+      <div><span>Orientation</span><b>Portrait, landscape or automatic rotation</b></div>
+      <div><span>Fullscreen / standalone</span><b>Choose immersive fullscreen or normal system bars</b></div>
+      <div><span>Pull to refresh</span><b>Swipe down at the top of a page to reload it</b></div>
+      <div><span>Navigation controls</span><b>Choose whether Android system navigation remains visible</b></div>
+      <div><span>Pinch-to-zoom</span><b>Allow users to zoom web content with two fingers</b></div>
+      <div><span>Keep screen awake</span><b>Prevent the display from sleeping while the app is open</b></div>
+      <div><span>Screenshot protection</span><b>Ask Android to block screenshots and screen recording</b></div>
+    </div>
+  </section>
+
+  <section class="notice glass" style="max-width:940px;margin:22px auto">
+    <h2>Common questions and troubleshooting</h2>
+    <b>My website preview does not open.</b>
+    <p>Check the address, make sure it starts with https://, and confirm the website is public and online.</p>
+    <b>The app opens to a blank page or says the site cannot be displayed.</b>
+    <p>The website may block Android WebView, require a browser-only feature, or depend on a browser extension. Ask the website administrator to allow embedded WebView access and test the site on an Android device.</p>
+    <b>I did not receive the email verification code.</b>
+    <p>Check Spam/Junk and confirm the email address. If it still does not arrive, the platform owner must check the Supabase email template and SMTP delivery settings.</p>
+    <b>My build failed.</b>
+    <p>Check that the website is public, the package ID is valid and the logo files are supported. Try again. If repeated attempts fail, the platform owner needs to inspect the private build logs and service configuration.</p>
+    <b>Can I publish the APK directly to Google Play?</b>
+    <p>AppForge currently creates a test/installable debug APK. Google Play distribution normally requires a signed release build and the Play Console publishing process. AppForge does not publish to Google Play for you.</p>
+    <b>Can I create an iPhone app or an offline app?</b>
+    <p>This builder currently creates Android APKs only. The app loads your live website, so it requires internet access; it is not an offline website exporter.</p>
+  </section>
+
+  <p class="fine-print" style="max-width:940px;margin:18px auto">For security, never share your password, private API keys or account verification code. Your website address and selected logo images are sent to the build service to create your APK.</p>
+</main><footer><div class="brand"><span class="brand-mark small">A</span><span>AppForge<small>WEBSITE TO ANDROID</small></span></div><p>A straightforward way to turn a website into an Android app.</p><div class="footer-links"><a href="/docs">Help guide</a><a href="/account">Account</a></div><strong>AppForge</strong></footer><aside class="channel-invite" id="channelInvite" aria-label="Channel updates" hidden><div class="channel-invite-card"><button type="button" class="channel-invite-close" id="channelInviteClose" aria-label="Close">×</button><p class="eyebrow">UPDATES</p><h2>Stay up to date</h2><p>Join the FG official channel for product news, useful tips and new features.</p><div class="channel-invite-actions"><a class="btn btn-primary" href="https://t.me/mafian_tech" target="_blank" rel="noopener">Join official channel</a><button type="button" class="btn btn-ghost" id="channelInviteLater">Not now</button><button type="button" class="btn btn-ghost" id="channelInviteNever">Don't show again</button></div></div></aside><script>(function(){try{if(location.pathname==='/admin'||location.pathname==='/admin.html'||localStorage.getItem('appforge_channel_never')==='1')return;var key='appforge_channel_last';var last=Number(localStorage.getItem(key)||0);var delay=last?Math.max(0,1200000-(Date.now()-last)):1200000;function hide(){var box=document.getElementById('channelInvite');if(box)box.hidden=true;}function show(){if(localStorage.getItem('appforge_channel_never')==='1')return;var box=document.getElementById('channelInvite');if(!box)return;box.hidden=false;localStorage.setItem(key,String(Date.now()));}function later(){hide();}function never(){localStorage.setItem('appforge_channel_never','1');hide();}document.getElementById('channelInviteClose')?.addEventListener('click',later);document.getElementById('channelInviteLater')?.addEventListener('click',later);document.getElementById('channelInviteNever')?.addEventListener('click',never);setTimeout(function(){show();setInterval(show,1200000);},delay);}catch(e){}})();</script></body></html>
