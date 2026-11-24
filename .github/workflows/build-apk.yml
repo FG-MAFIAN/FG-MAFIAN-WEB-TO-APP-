@@ -178,7 +178,7 @@ jobs:
 
           cat > package.json <<'PKG'
           {
-            "name": "fg-mafian-generated-app",
+            "name": "appforge-generated-app",
             "version": "1.0.0",
             "private": true,
             "dependencies": {
@@ -268,7 +268,7 @@ jobs:
           tree.write(manifest, encoding='utf-8', xml_declaration=True)
 
           # Ensure the selected app name is used as the Android launcher label.
-          app_name = os.environ.get('APP_NAME', 'FG MAFIAN')
+          app_name = os.environ.get('APP_NAME', 'AppForge')
           strings_file = res / 'values' / 'strings.xml'
           if strings_file.exists():
               strings_tree = ET.parse(strings_file)
