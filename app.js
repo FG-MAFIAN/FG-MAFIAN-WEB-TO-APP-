@@ -420,6 +420,7 @@
   gameModal?.addEventListener('click', event => { if (event.target === gameModal) closeGame(); });
 
   const form = $('appForm');
+  if (form) getCloudClient().then(async client => { const { data } = client ? await client.auth.getSession() : { data: { session: null } }; if (!data.session) window.location.replace('/account#login'); }).catch(() => window.location.replace('/account#login'));
   form?.addEventListener('submit', async event => {
     event.preventDefault();
     const btn = event.submitter || form.querySelector('[type="submit"]');
