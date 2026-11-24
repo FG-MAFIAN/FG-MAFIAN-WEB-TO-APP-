@@ -209,7 +209,7 @@
         const link = $('downloadApk');
         if (link) {
           link.href = publicDownloadUrl; link.textContent = 'Download APK';
-          link.removeAttribute('target'); link.setAttribute('download', 'fg-mafian-app.apk');
+          link.removeAttribute('target'); link.setAttribute('download', 'appforge-app.apk');
           link.classList.remove('hidden');
         }
         const copyLink = $('copyPublicDownload');
