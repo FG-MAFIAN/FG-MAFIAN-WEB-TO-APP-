@@ -7,7 +7,7 @@
       const saved = localStorage.getItem(key);
       if (saved === 'light' || saved === 'dark') return saved;
     } catch {}
-    return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    return 'light';
   };
   const applyTheme = theme => {
     root.dataset.theme = theme;
