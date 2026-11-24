@@ -299,3 +299,44 @@ html[data-theme="light"] .glass,html[data-theme="light"] .form-card,html[data-th
 
 h1,h2,h3,h4,.section-heading h2,.form-title h3,.output-card h3{font-family:Inter,system-ui,sans-serif!important;letter-spacing:-.025em}
 :focus-visible{outline:3px solid rgba(49,91,125,.35);outline-offset:2px}
+
+
+/* AppForge: calm, accessible product styling */
+:root,html[data-theme="dark"],html[data-theme="light"]{--bg:#f4f6f8;--panel:#fff;--line:#e4e7ec;--text:#202833;--muted:#667085;--green:#315d8a;--cyan:#537da5;--purple:#667085;--blue:#315d8a;--mono:Inter,system-ui,sans-serif;color-scheme:light}
+html,body{background:#f4f6f8!important;color:#202833!important;font-family:Inter,system-ui,sans-serif!important}
+body:after,.bg-video{display:none!important}
+.backdrop{background:#f4f6f8!important}
+.backdrop:before,.backdrop:after{display:none!important}
+.topbar{background:#fff!important;border-bottom:1px solid #e4e7ec!important;box-shadow:0 1px 3px rgba(16,24,40,.04);backdrop-filter:none!important}
+.brand{color:#202833!important;letter-spacing:-.02em!important}
+.brand small{color:#667085!important}
+.brand-mark{background:#315d8a!important;color:#fff!important;border-radius:12px!important;box-shadow:none!important}
+.multi-nav{display:flex;align-items:center}
+.home-menu{position:relative}
+.home-menu summary{list-style:none;cursor:pointer;padding:10px 16px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;color:#344054;font-weight:600}
+.home-menu summary::-webkit-details-marker{display:none}
+.home-menu[open] summary{background:#f2f4f7}
+.home-menu-items{position:absolute;top:calc(100% + 8px);left:0;z-index:20;min-width:190px;padding:7px;background:#fff;border:1px solid #e4e7ec;border-radius:12px;box-shadow:0 12px 30px rgba(16,24,40,.12);display:grid;gap:3px}
+.home-menu-items a{padding:10px 12px;border-radius:8px;color:#344054}
+.home-menu-items a:hover{background:#f2f4f7}
+.contact-mini{background:#315d8a!important;color:#fff!important;border-radius:9px!important}
+.glass,.form-card,.output-card,.preview-card,.notice,.steps article{background:#fff!important;color:#202833!important;border:1px solid #e4e7ec!important;box-shadow:0 4px 16px rgba(16,24,40,.045)!important;backdrop-filter:none!important}
+h1,h2,h3,h4,.section-heading h2,.form-title h3,.output-card h3{font-family:Inter,system-ui,sans-serif!important;color:#202833!important;letter-spacing:-.025em}
+p,.muted,.lead,.fine-print,.hint{color:#667085!important}
+.btn-primary{background:#315d8a!important;border-color:#315d8a!important;color:#fff!important;box-shadow:none!important}
+.btn-ghost{background:#fff!important;border:1px solid #d0d5dd!important;color:#344054!important}
+input,textarea,select{background:#fff!important;color:#202833!important;border:1px solid #d0d5dd!important;border-radius:8px!important}
+input:focus,textarea:focus,select:focus{outline:3px solid rgba(49,93,138,.15)!important;border-color:#315d8a!important}
+footer{background:#fff!important;border-top:1px solid #e4e7ec!important;color:#667085!important}
+footer strong{color:#475467!important}
+.channel-invite[hidden]{display:none!important}
+.channel-invite{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:rgba(16,24,40,.48)}
+.channel-invite-card{position:relative;width:min(100%,420px);padding:28px;background:#fff;border:1px solid #e4e7ec;border-radius:18px;box-shadow:0 24px 70px rgba(16,24,40,.2);color:#202833}
+.channel-invite-card h2{margin:6px 0 8px;font-size:25px}
+.channel-invite-card p{line-height:1.55}
+.channel-invite-close{position:absolute;right:14px;top:12px;border:0;background:transparent;color:#667085;font-size:26px;cursor:pointer}
+.channel-invite-actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 12px}
+.channel-invite-never{display:flex;align-items:center;gap:8px;color:#667085;font-size:13px}
+.channel-invite-never input{width:auto}
+.pro-main{padding-top:38px}
+@media(max-width:700px){.topbar{padding:0 16px;height:70px}.topbar .contact-mini{display:none}.brand{font-size:15px}.multi-nav{margin-left:auto}.home-menu-items{right:0;left:auto}.channel-invite-card{padding:24px}}
