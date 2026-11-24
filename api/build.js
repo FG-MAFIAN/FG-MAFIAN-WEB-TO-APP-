@@ -142,7 +142,7 @@ export default async function handler(req, res) {
       const response = await githubRequest(runsUrl, GITHUB_TOKEN);
       if (!response.ok) continue;
       const data = await response.json();
-      run = (data.workflow_runs || []).find(item => item.display_title === `FG MAFIAN APK ${buildId}`);
+      run = (data.workflow_runs || []).find(item => item.display_title === `AppForge APK ${buildId}`);
     }
     return res.status(202).json({
       ok: true, buildId, runId: run?.id || null,
