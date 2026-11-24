@@ -449,7 +449,7 @@
         pullRefresh: Boolean($('pullRefresh')?.checked),
         navControls: Boolean($('navControls')?.checked),
         statusBarColor: $('statusBarColor')?.value || '#f8fafc',
-        statusBarStyle: $('statusBarStyle')?.value || 'light',
+        statusBarStyle: $('statusBarStyle')?.value || 'dark',
         allowZoom: Boolean($('allowZoom')?.checked),
         keepScreenOn: Boolean($('keepScreenOn')?.checked),
         preventScreenshots: Boolean($('preventScreenshots')?.checked),
