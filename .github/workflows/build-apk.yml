@@ -120,7 +120,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: fg-mafian-apk-build
+  group: fg-mafian-apk-build-${{ inputs.build_id }}
   cancel-in-progress: false
 
 jobs:
