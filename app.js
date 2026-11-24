@@ -79,8 +79,29 @@
     try { window.open(normalizedUrl($('siteUrl')?.value.trim()), '_blank', 'noopener'); }
     catch (error) { toast(error.message); }
   });
+  const packageIdInput = $('packageId');
+  let packageIdTouched = false;
+  function suggestedPackageId() {
+    let host = 'website';
+    try { host = new URL($('siteUrl')?.value.trim() || '').hostname.replace(/^www\./, '').split('.')[0]; } catch {}
+    const name = $('appName')?.value.trim() || 'app';
+    const clean = value => {
+      let slug = String(value).toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 35);
+      if (!slug) slug = 'app';
+      if (!/^[a-z]/.test(slug)) slug = 'app_' + slug;
+      return slug;
+    };
+    return 'com.appforge.' + clean(host) + '_' + clean(name);
+  }
+  function updatePackageSuggestion() {
+    if (packageIdInput && !packageIdTouched) packageIdInput.value = suggestedPackageId();
+  }
+  packageIdInput?.addEventListener('input', () => { packageIdTouched = true; });
+  updatePackageSuggestion();
+
   $('siteUrl')?.addEventListener('input', event => {
     if ($('previewUrl')) $('previewUrl').textContent = event.target.value.trim() || 'Your website URL will appear here';
+    updatePackageSuggestion();
   });
   function updateSplashPreview() {
     const screen = $('splashPreviewScreen');
@@ -103,6 +124,7 @@
     const name = event.target.value.trim() || 'Your app name';
     if ($('previewName')) $('previewName').textContent = name;
     updateSplashPreview();
+    updatePackageSuggestion();
   });
   $('splashColor')?.addEventListener('input', updateSplashPreview);
   $('themeColor')?.addEventListener('input', event => {
