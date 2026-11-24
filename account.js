@@ -1,6 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 const $ = id => document.getElementById(id);
-let supabase = null, mode = 'login', verifyingSignup = false, pendingEmail = '';
+let supabase = null, mode = 'login', verifyingSignup = false, pendingEmail = '', currentUser = null;
 async function reportPrivateError(source, error) { try { const session = supabase ? (await supabase.auth.getSession()).data.session : null; if (session) await fetch('/api/log',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({source,message:String(error?.stack||error?.message||error||'Unknown error').slice(0,1200),path:location.pathname})}); } catch {} }
 function message(text, error = false) {
   $('authMessage').textContent = text;
