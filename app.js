@@ -42,6 +42,7 @@
     });
   }
 
+  async function reportPrivateError(source, error) { try { const client = await getCloudClient(); const { data } = client ? await client.auth.getSession() : { data: { session: null } }; if (data?.session) await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` }, body: JSON.stringify({ source, message: String(error?.stack || error?.message || error || 'Unknown error').slice(0, 1200), path: location.pathname }) }); } catch {} }
   let toastTimer;
   function toast(message) {
     const el = $('toast');
@@ -478,8 +479,8 @@
       if ($('buildTitle')) $('buildTitle').textContent = 'Build request accepted';
       if ($('buildMessage')) $('buildMessage').textContent = data.message || 'Your Android app is being prepared. Check My Builds for progress.';
       checkBuild(build);
-      openGameOffer();
     } catch (error) {
+      reportPrivateError('app-build', error);
       if ($('result')) $('result').classList.remove('hidden');
       if ($('buildTitle')) $('buildTitle').textContent = 'Could not start build';
       if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
