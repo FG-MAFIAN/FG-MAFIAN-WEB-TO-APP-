@@ -1,149 +1,113 @@
-<div align="center">
+# AppForge — Website to Android App Generator
 
-# 𝗙𝗚 𝗠𝗔𝗙𝗜𝗔𝗡 — Web-to-App Builder
+AppForge turns a public HTTPS website into an installable Android APK. Visitors can configure the app identity and supported Android behavior, submit a cloud build, follow its progress, and download the finished APK.
 
-<p><b>Turn a website into an installable Android APK.</b><br>
-Build online · Track progress · Download your APK directly</p>
+## What AppForge includes
 
-<a href="https://web-to-app-builder.vercel.app/">
-  <img src="https://img.shields.io/badge/OPEN%20BUILDER-Visit%20Website-168BFF?style=for-the-badge&logo=vercel&logoColor=white" alt="Open Builder">
-</a>
-<a href="https://t.me/FG_MAFIAN">
-  <img src="https://img.shields.io/badge/CONTACT%20OWNER-Telegram-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Contact owner">
-</a>
-<a href="https://t.me/mafian_tech">
-  <img src="https://img.shields.io/badge/JOIN%20CHANNEL-Telegram-20B77A?style=for-the-badge&logo=telegram&logoColor=white" alt="Join channel">
-</a>
+- Account registration with email verification and sign-in.
+- A guided website-to-Android builder with live opening-screen preview.
+- Custom app name, Android package ID, version name and version code.
+- Optional home-screen icon and separate opening-screen logo.
+- Theme, splash-screen and status-bar colors.
+- Portrait, landscape or automatic orientation.
+- Fullscreen or standalone display mode.
+- Pull-to-refresh, Android navigation visibility, pinch-to-zoom, keep-screen-awake and screenshot protection.
+- Cloud APK compilation through GitHub Actions.
+- Build status tracking, personal project history and APK downloads.
+- Account profile and an owner-only admin dashboard for account controls, maintenance mode and private error reports.
+- A step-by-step public guide at `/docs`.
 
-<br><br>
+## How a visitor uses it
 
-<a href="https://web-to-app-builder.vercel.app/">
-  <img src="https://files.catbox.moe/0narey.jpg" alt="FG MAFIAN Web-to-App Builder preview" width="92%">
-</a>
+1. Open the website and create an account. Enter the email verification code sent to the inbox.
+2. Open **Create App** and enter a public HTTPS website address.
+3. Preview the website, choose the app name and package ID, and set the version.
+4. Upload optional logos and choose the appearance and Android behavior.
+5. Select **Build installable APK**. The build runs on GitHub Actions; it can take several minutes.
+6. Open **My Apps** to follow progress. The page refreshes active build status automatically while it is open.
+7. When the status is **APK ready**, download the APK and install it on an Android device.
 
-<br>
+The public guide explains the settings, installation steps and common problems.
 
-![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white)
-![Build](https://img.shields.io/badge/Build-GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
-![Hosting](https://img.shields.io/badge/Hosting-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+## Technology
 
-</div>
+- Static frontend: HTML, CSS and JavaScript.
+- Hosting and API routing: Cloudflare Pages with Pages Functions.
+- Accounts and project records: Supabase Auth and Postgres.
+- APK compilation: GitHub Actions, Node.js, Capacitor, Java and Android SDK.
+- Download tracking: Upstash Redis REST API.
 
----
+## Deploy to Cloudflare Pages
 
-## ✨ What it does
+Connect this GitHub repository to a Cloudflare Pages project.
 
-FG MAFIAN Web-to-App Builder lets a visitor submit a public HTTPS website and request an Android APK build.
-
-- 🌐 Convert a website URL into an Android app.
-- 🎨 Set the app name, package ID, orientation and theme colors.
-- 🖼️ Add a home-screen icon and a separate opening-screen logo.
-- ⚙️ Build the APK using GitHub Actions.
-- 📥 Check build progress and download the finished APK from the website.
-- 🎮 Play an optional lightweight **Tic-Tac-Toe** game against the computer while GitHub builds your APK, or skip it.
-
-## 🚀 Open the website
-
-**[https://web-to-app-builder.vercel.app/](https://web-to-app-builder.vercel.app/)**
-
-Use the website navigation to open **Home**, **Create App**, **My Builds**, **Quick Guide** and **About**. After a build request is accepted, choose **PLAY GAME** to play Tic-Tac-Toe against the computer, or **SKIP GAME** / close the game prompt. The game has no external assets, audio, background animation loop, or build-status overlay. The GitHub Actions build runs independently on GitHub, so visitors can navigate away or close the website without cancelling the build. If they return later, they can check the saved build in **My Builds** (browser storage is device/browser-specific).
-
-## 👑 Project contact
-
-| Contact | Link |
+| Setting | Value |
 |---|---|
-| Owner | [Precious Famile — Contact on Telegram](https://t.me/FG_MAFIAN) |
-| Telegram channel | [Join FG MAFIAN](https://t.me/mafian_tech) |
-| Website | [Open FG MAFIAN Builder](https://web-to-app-builder.vercel.app/) |
+| Framework preset | None |
+| Root directory | Repository root |
+| Build command | Leave empty |
+| Build output directory | `.` |
+| Functions directory | `functions/` (keep at repository root) |
 
-## 🛠️ Deployment notes
+Keep `api/`, `functions/`, `.github/workflows/` and `supabase/` in the repository root. The Pages adapter routes requests to `/api/*`.
 
-1. Deploy this repository from its **root directory** on Vercel. Do not set `api` as the Vercel Root Directory.
-2. Keep `api/` and `.github/workflows/` at the repository root.
-3. Add these Vercel environment variables:
+### Cloudflare Pages environment variables
 
-   - `GITHUB_TOKEN`
-   - `GITHUB_OWNER`
-   - `GITHUB_REPO`
-   - `GITHUB_BRANCH` (optional; defaults to `main`)
-   - `UPSTASH_REDIS_REST_URL`
-   - `UPSTASH_REDIS_REST_TOKEN`
-   - `DOWNLOAD_LIMIT_PER_HOUR` (optional; defaults to `3`; set `0` for no hourly limit)
+Add the following under **Workers & Pages → your Pages project → Settings → Variables and Secrets**. Add secrets as encrypted secrets, not plain text variables.
 
-   **Set up the Upstash Redis values:** Create a Redis database in your Upstash account, open its **REST API** section, and copy the REST URL and REST token into the two matching Vercel environment variables above. Keep the token private; do not put it in frontend code, this README, or a public GitHub file. Upstash is required for server-side, atomic download tracking. APK build submissions do not use or require the download allowance. The Upstash counter is checked only when a completed APK is downloaded. A download is counted once per unique workflow run, only after the complete APK stream finishes. Failed/cancelled builds and interrupted downloads are not counted. `DOWNLOAD_LIMIT_PER_HOUR` controls the per-network hourly limit and defaults to 3; set it to `0` to disable the limit while keeping duplicate-download protection and tracking.
+| Variable | Purpose |
+|---|---|
+| `GITHUB_TOKEN` | Server-side token allowed to dispatch/read Actions workflows and access build releases |
+| `GITHUB_OWNER` | `FG-MAFIAN` (GitHub repository owner) |
+| `GITHUB_REPO` | `FG-MAFIAN-WEB-TO-APP-` |
+| `GITHUB_BRANCH` | `main` after the production changes are merged |
+| `SUPABASE_URL` | Supabase project URL, without `/rest/v1/` |
+| `SUPABASE_ANON_KEY` | Supabase publishable/anon key used by the browser client |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role secret; server-side only |
+| `ADMIN_EMAILS` | Comma-separated email addresses permitted to use the admin panel |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token; server-side only |
+| `DOWNLOAD_LIMIT_PER_HOUR` | Unique APK builds a network can download per hour; defaults to `3`, set to `0` to disable |
 
-4. Add the variables in Vercel under **Project → Settings → Environment Variables**. Apply them to the environments where you deploy (Production, and Preview/Development if you use those environments).
-5. The GitHub token needs permission to dispatch and read workflow runs, and the workflow token needs permission to publish release assets. Keep `.github/workflows/build-apk.yml` in the GitHub repository root on the default branch and deploy using the same repository and branch configured in Vercel. `GITHUB_BRANCH` selects the branch used for each workflow dispatch (defaults to `main`).
-6. Enable GitHub Actions for the repository.
-7. Redeploy Vercel after adding or changing environment variables. Then open the API health check below and confirm that its configuration reports are healthy before trying a real APK build.
-
-### API health check
-
-After deployment, open:
-
-`https://web-to-app-builder.vercel.app/api/health`
-
-A working API should return JSON with `"ok": true`.
-
----
-
-<div align="center">
-
-**Made and maintained by Precious Famile**  
-**𝗙𝗚 𝗠𝗔𝗙𝗜𝗔𝗡**
-
-<a href="https://web-to-app-builder.vercel.app/">Website</a> ·
-<a href="https://t.me/FG_MAFIAN">Contact owner</a> ·
-<a href="https://t.me/mafian_tech">Join channel</a>
-
-</div>
-
-## Public APK sharing
-After a successful build, the builder displays a **Copy public download link** control alongside **Download APK**. The copied URL points to the server-side download endpoint for that completed build. Anyone with the URL can download the APK; the GitHub token is never included in the URL. The link remains usable while the matching GitHub release and APK asset are available.
-
-## FG MAFIAN PRO account and admin upgrade
-
-The existing website UI and APK build flow remain in place. The upgrade adds `/account` for Supabase email/password accounts, optional cloud-saved project records, and `/admin` for restricted platform controls (user plan assignment, blocking/unblocking accounts, and maintenance mode). Admin access is enforced by the server-side `ADMIN_EMAILS` allowlist; hiding a page link is not used as a security boundary.
+Apply variables to Production and Preview environments as appropriate, then redeploy Pages after changing them.
 
 ### Supabase setup
 
 1. Create a Supabase project.
-2. Open **SQL Editor** and run the complete `supabase/schema.sql` file from this repository.
-3. In Vercel, add:
-   - `SUPABASE_URL` — project URL.
-   - `SUPABASE_ANON_KEY` — publishable/anon key (safe for browser use; never use the service-role key here).
-   - `SUPABASE_SERVICE_ROLE_KEY` — service-role secret, server-side only.
-   - `ADMIN_EMAILS` — comma-separated administrator email addresses, for example `owner@example.com`.
-4. In Supabase **Authentication → URL Configuration**, set the Site URL to your deployed Vercel domain and add your Vercel production/preview callback URLs to the allowed redirect URLs.
-5. Deploy/redeploy the project. Open `/account`, create an account, and sign in. The admin email must exactly match an entry in `ADMIN_EMAILS` to use `/admin`.
+2. Open its SQL Editor and run the complete `supabase/schema.sql` file.
+3. In Authentication settings, configure email verification to send a numeric token using the `{{ .Token }}` template and configure SMTP delivery.
+4. Set the Site URL to the deployed AppForge domain and add the production and preview URLs to the allowed redirect URLs.
+5. Add the Supabase URL, anon key and service-role key to Cloudflare Pages. Never put the service-role key in browser code or GitHub.
 
-The SQL deliberately prevents normal users from changing their own `role`, `plan`, or `is_blocked` fields. The server-side admin API uses the service-role key only after validating the signed-in user's session and email allowlist.
+### GitHub Actions setup
 
-### Current PRO feature boundaries
+1. Enable GitHub Actions for the repository.
+2. Ensure `.github/workflows/build-apk.yml` exists on the branch configured in `GITHUB_BRANCH`.
+3. Configure `GITHUB_TOKEN` with permission to dispatch workflows, read workflow runs and read release assets. The workflow's built-in token needs Contents write permission to publish the APK release.
+4. Confirm the GitHub repository's Actions usage limits are suitable for the expected number of builds.
 
-- Existing icon, splash logo, app name, package ID, description, colors, orientation, display mode, pull-to-refresh and navigation controls are retained.
-- Version name and version code are now configurable and applied to the Android Gradle project during the workflow.
-- Build history remains available in the browser's My Builds page. If a user is signed in when a build is submitted, the project/build metadata is also upserted to their Supabase account.
-- Admin can manually assign Free/Premium labels and block/unblock accounts. A payment processor is not connected, and Premium does not yet change the hourly IP-based download cap. Do not advertise paid subscriptions as purchasable until a payment provider and entitlement enforcement are configured.
-- Maintenance mode is stored in Supabase and prevents new build dispatches while enabled. It does not cancel builds already running on GitHub Actions.
-- Public APK links continue to point to the server download endpoint. The release must remain available on GitHub for the link to work.
+### Verify the deployment
 
-### Additional Vercel environment variables
+Open `https://YOUR-PAGES-DOMAIN/api/health`. This checks that the Pages API route responds. It does not prove that Supabase, GitHub Actions, Upstash or a real Android build is configured correctly.
 
-In addition to the existing GitHub and Upstash variables, configure `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `ADMIN_EMAILS`. Never place `SUPABASE_SERVICE_ROLE_KEY` or `GITHUB_TOKEN` in frontend JavaScript or public repository files. The `/api/health` endpoint reports whether the account/admin configuration is present, but does not expose secret values.
+Then perform an end-to-end test:
+- Register a test account and verify its email.
+- Sign in and submit a test website.
+- Confirm that a GitHub Actions workflow starts.
+- Wait for the APK build to complete.
+- Download the APK and install it on an Android test device.
+- Confirm that the project appears under My Apps and that the owner admin panel works only for an allowlisted email.
 
+## Important limitations
 
-## Expanded Android app settings
+- AppForge currently generates Android APKs only; it does not create iOS apps.
+- The APK loads the supplied live HTTPS website inside an Android WebView. It is not an offline website export and needs internet access.
+- Some websites block WebView embedding or depend on browser-only features. Those sites may not work until their owners adjust their security settings.
+- The current workflow produces a debug APK for testing and direct installation. Google Play distribution requires a signed release build and a separate Play Console publishing process.
+- Premium labels can be assigned by the owner, but no payment processor or automatic subscription entitlement is connected. Do not advertise paid plans as purchasable until that integration is implemented.
+- A successful JavaScript source check is not proof of a successful Android build. Test a real APK after configuring all external services.
 
-The Create App page exposes the Android settings that are currently implemented by the build workflow:
+## Security
 
-- App name, Android application ID, version name, version code and description.
-- Home-screen launcher icon and separate splash-screen logo.
-- App theme, splash background and Android status-bar colors.
-- Portrait, landscape or sensor-based orientation.
-- Fullscreen or standalone display behavior.
-- Pull-to-refresh and Android navigation visibility.
-- Status-bar icon contrast (light or dark icons).
-- Optional pinch-to-zoom, keep-screen-awake and screenshot/screen-recording protection.
+Never commit GitHub tokens, Supabase service-role keys, Upstash tokens, passwords or verification codes. Keep all privileged values in Cloudflare Pages encrypted secrets. The public API returns generic errors; private technical reports are available only through the owner admin dashboard.
 
-These options are validated by `api/build.js`, passed to the GitHub Actions workflow, and applied to the generated Android project. The app loads the website from its live HTTPS URL; it is not an offline website exporter. The generated debug APK is suitable for testing and direct installation, while Play Store distribution requires a properly signed release build.
