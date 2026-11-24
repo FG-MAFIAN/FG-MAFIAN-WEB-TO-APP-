@@ -13,6 +13,7 @@ async function init() {
   } catch { message('Could not load account services. Check your deployment configuration.', true); }
 }
 async function showProfile(user) {
+  try { localStorage.setItem('fgmafian_welcome_done', '1'); } catch {}
   currentUser = user; $('authCard').classList.add('hidden'); $('profileCard').classList.remove('hidden'); $('profileEmail').textContent = user.email || '';
   const { data: profile } = await supabase.from('profiles').select('display_name,plan,role,is_blocked').eq('id', user.id).maybeSingle();
   if (profile?.is_blocked) { await supabase.auth.signOut(); message('This account has been disabled by the platform administrator.', true); return; }
@@ -27,4 +28,5 @@ function hideProfile() { currentUser = null; $('profileCard').classList.add('hid
 $('showLogin').addEventListener('click', () => setMode('login')); $('showSignup').addEventListener('click', () => setMode('signup'));
 $('authForm').addEventListener('submit', async event => { event.preventDefault(); if (!supabase) return; $('authSubmit').disabled = true; message('Please wait…'); try { const email = $('email').value.trim(), password = $('password').value; if (mode === 'signup') { const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: $('displayName').value.trim() } } }); if (error) throw error; message(data.session ? 'Account created.' : 'Check your email to confirm your account, then sign in.'); } else { const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) throw error; message('Signed in successfully.'); } } catch (error) { message(error.message || 'Account request failed.', true); } finally { $('authSubmit').disabled = false; } });
 $('signOut').addEventListener('click', async () => { await supabase?.auth.signOut(); hideProfile(); });
-setMode('login'); init();
+const requestedMode = location.hash === '#signup' ? 'signup' : 'login';
+setMode(requestedMode); init();
