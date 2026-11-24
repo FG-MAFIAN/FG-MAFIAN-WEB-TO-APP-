@@ -24,7 +24,9 @@ function validate(body) {
   const {
     siteUrl, appName, appId, orientation, themeColor, splashColor, versionName = '1.0.0', versionCode = '1',
     logoData = '', splashLogoData = '', description = '',
-    displayMode = 'standalone', pullRefresh = true, navControls = false
+    displayMode = 'standalone', pullRefresh = true, navControls = false,
+    statusBarColor = '#070914', statusBarStyle = 'light',
+    allowZoom = false, keepScreenOn = false, preventScreenshots = false
   } = body;
   let url;
   if (typeof siteUrl !== 'string' || siteUrl.length > 2048) throw new Error('Website URL must be 2,048 characters or fewer.');
@@ -38,7 +40,9 @@ function validate(body) {
   if (!['portrait', 'landscape', 'any'].includes(orientation)) throw new Error('Invalid screen orientation.');
   if (!['fullscreen', 'standalone'].includes(displayMode)) throw new Error('Invalid display mode.');
   if (typeof pullRefresh !== 'boolean' || typeof navControls !== 'boolean') throw new Error('Invalid navigation settings.');
-  if (!COLOR_RE.test(themeColor) || !COLOR_RE.test(splashColor)) throw new Error('Theme and splash colors must be valid six-digit hex colors.');
+  if (!COLOR_RE.test(themeColor) || !COLOR_RE.test(splashColor) || !COLOR_RE.test(statusBarColor)) throw new Error('Theme, splash and status bar colors must be valid six-digit hex colors.');
+  if (!['light', 'dark'].includes(statusBarStyle)) throw new Error('Invalid status bar icon style.');
+  if ([allowZoom, keepScreenOn, preventScreenshots].some(value => typeof value !== 'boolean')) throw new Error('Invalid advanced Android settings.');
   if (typeof description !== 'string' || description.length > 180) throw new Error('App description must be 180 characters or fewer.');
   for (const [label, value] of [['home-screen', logoData], ['opening-screen', splashLogoData]]) {
     if (typeof value !== 'string' || value.length > 31000 || (value && !IMAGE_RE.test(value))) {
@@ -50,7 +54,9 @@ function validate(body) {
     theme_color: themeColor, splash_color: splashColor, logo_data: logoData,
     splash_logo_data: splashLogoData, app_description: description.trim(),
     display_mode: displayMode, pull_refresh: String(pullRefresh),
-    nav_controls: String(navControls)
+    nav_controls: String(navControls), status_bar_color: statusBarColor,
+    status_bar_style: statusBarStyle, allow_zoom: String(allowZoom),
+    keep_screen_on: String(keepScreenOn), prevent_screenshots: String(preventScreenshots)
   };
 }
 
