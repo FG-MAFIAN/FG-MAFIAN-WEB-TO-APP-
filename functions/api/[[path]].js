@@ -6,8 +6,9 @@ import health from '../../api/health.js';
 import config from '../../api/config.js';
 import admin from '../../api/admin.js';
 import maintenance from '../../api/maintenance.js';
+import log from '../../api/log.js';
 
-const handlers = { build, status, download, health, config, admin, maintenance };
+const handlers = { build, status, download, health, config, admin, maintenance, log };
 
 class ResponseAdapter extends Writable {
   constructor() {
