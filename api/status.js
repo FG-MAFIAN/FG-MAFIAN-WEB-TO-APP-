@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed.' }); }
   const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO } = process.env;
-  if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return res.status(500).json({ error: 'Build status is not configured in Vercel.' });
+  if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
 
   const runId = String(req.query?.run_id || '');
   const buildId = String(req.query?.build_id || '');
@@ -22,12 +22,12 @@ export default async function handler(req, res) {
     let run = null;
     if (/^\d{1,20}$/.test(runId)) {
       const response = await fetch(`${base}/actions/runs/${runId}`, { headers });
-      if (response.status === 404) return res.status(404).json({ error: 'That GitHub build run was not found.' });
-      if (!response.ok) return res.status(502).json({ error: `GitHub status lookup failed (HTTP ${response.status}).` });
+      if (response.status === 404) return res.status(404).json({ error: 'Something went wrong. Please try again.' });
+      if (!response.ok) console.error('GitHub status lookup failed:', response.status); return res.status(502).json({ error: 'Something went wrong. Please try again.' });
       run = await response.json();
     } else {
       const response = await fetch(`${base}/actions/workflows/build-apk.yml/runs?event=workflow_dispatch&per_page=50`, { headers });
-      if (!response.ok) return res.status(502).json({ error: `GitHub status lookup failed (HTTP ${response.status}).` });
+      if (!response.ok) console.error('GitHub status lookup failed:', response.status); return res.status(502).json({ error: 'Something went wrong. Please try again.' });
       const payload = await response.json();
       run = (payload.workflow_runs || []).find(item => item.display_title === `FG MAFIAN APK ${buildId}`);
       if (!run) return res.status(200).json({ status: 'queued', buildId, message: 'Waiting for GitHub to register this build.' });
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     if (run.path !== '.github/workflows/build-apk.yml' || run.event !== 'workflow_dispatch') {
       return res.status(403).json({ error: 'The requested run does not belong to the FG MAFIAN APK workflow.' });
     }
-    const common = { runId: run.id, runUrl: run.html_url, status: run.status };
+    const common = { runId: run.id, status: run.status };
     if (run.status === 'queued' || run.status === 'waiting' || run.status === 'requested' || run.status === 'pending') {
       return res.status(200).json({ ...common, status: 'queued' });
     }
@@ -47,9 +47,9 @@ export default async function handler(req, res) {
       return res.status(200).json({ ...common, status: 'success', downloadUrl: `/api/download?run_id=${encodeURIComponent(run.id)}`, message: 'Your APK is ready to download.' });
     }
     if (run.conclusion === 'cancelled') return res.status(200).json({ ...common, status: 'cancelled', message: 'This APK build was cancelled.' });
-    return res.status(200).json({ ...common, status: 'failure', message: `The Android build ${run.conclusion || 'failed'}. Open the GitHub Actions logs for details.` });
+    return res.status(200).json({ ...common, status: 'failure', message: 'Something went wrong. Please try again.' });
   } catch (error) {
     console.error('Status lookup error:', error);
-    return res.status(502).json({ error: 'Could not contact GitHub to check this build.' });
+    return res.status(502).json({ error: 'Something went wrong. Please try again.' });
   }
         }
