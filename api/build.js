@@ -77,10 +77,10 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return fail(res, 405, 'Method not allowed.'); }
 
   const { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } = process.env;
-  const bearer = String(req.headers?.authorization || '').replace(/^Bearer\\s+/i, '');
+  const bearer = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '');
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !bearer) return fail(res, 401, 'Sign in to create an app.');
   try {
-    const authResponse = await fetch(`${SUPABASE_URL.replace(/\\/$/, '')}/auth/v1/user`, {
+    const authResponse = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${bearer}` }
     });
     if (!authResponse.ok) return fail(res, 401, 'Your session has expired. Please sign in again.');
