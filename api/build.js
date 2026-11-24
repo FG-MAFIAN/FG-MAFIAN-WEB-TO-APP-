@@ -54,59 +54,6 @@ function validate(body) {
   };
 }
 
-function clientKey(req) {
-  const realIp = String(req.headers?.['x-real-ip'] || '').trim();
-  const forwarded = String(req.headers?.['x-forwarded-for'] || '').split(',').pop().trim();
-  const ip = realIp || forwarded || 'unknown';
-  return createHash('sha256').update(ip).digest('hex');
-}
-
-async function redisCommand(command) {
-  const { UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } = process.env;
-  if (!UPSTASH_REDIS_REST_URL || !UPSTASH_REDIS_REST_TOKEN) {
-    const error = new Error('Download tracking is not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Vercel.');
-    error.status = 503;
-    throw error;
-  }
-  let response;
-  try {
-    response = await fetch(UPSTASH_REDIS_REST_URL.replace(/\/+$/, ''), {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(command)
-    });
-  } catch {
-    const error = new Error('Could not contact the download tracking service. Please try again later.');
-    error.status = 503;
-    throw error;
-  }
-  if (!response.ok) {
-    const error = new Error('Could not verify download usage. Please try again later.');
-    error.status = 503;
-    throw error;
-  }
-  const payload = await response.json();
-  if (payload.error) {
-    const error = new Error('Download tracking returned an invalid response.');
-    error.status = 503;
-    throw error;
-  }
-  return payload.result;
-}
-
-// This is a read-only check. Only a completed, streamed APK download is counted.
-async function checkDownloadAllowance(req) {
-  const limit = Number.parseInt(process.env.DOWNLOAD_LIMIT_PER_HOUR || '3', 10);
-  if (!Number.isInteger(limit) || limit < 0) throw new Error('DOWNLOAD_LIMIT_PER_HOUR must be a non-negative integer.');
-  if (limit === 0) return;
-  const key = `fgmafian:downloads:${clientKey(req)}`;
-  const count = await redisCommand(['ZCOUNT', key, String(Date.now() - 3600000), '+inf']);
-  if (Number(count) >= limit) {
-    const error = new Error(`Download limit reached. You can download up to ${limit} APKs per hour from this network.`);
-    error.status = 429;
-    throw error;
-  }
-}
 async function githubRequest(url, token, options = {}) {
   return fetch(url, {
     ...options,
@@ -141,7 +88,6 @@ export default async function handler(req, res) {
   try {
     const body = getBody(req);
     inputs = validate(body);
-    await checkDownloadAllowance(req);
   } catch (error) {
     return fail(res, error.status || 400, error.message || 'Invalid build request.');
   }
