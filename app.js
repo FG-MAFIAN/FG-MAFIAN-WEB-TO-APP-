@@ -58,10 +58,9 @@
     try { data = text ? JSON.parse(text) : {}; }
     catch {
       const preview = text.replace(/\s+/g, ' ').slice(0, 180);
-      if (response.status === 404) throw new Error('Vercel could not find this API route. Confirm the api folder is at the repository root and redeploy.');
-      throw new Error(`The server returned a non-JSON response (HTTP ${response.status}). ${preview || 'Empty response'}`);
+      throw new Error('Something went wrong. Please try again.');
     }
-    if (!response.ok) throw new Error(data.error || `Request failed (HTTP ${response.status}).`);
+    if (!response.ok) throw new Error('Something went wrong. Please try again.');
     return data;
   }
 
@@ -234,7 +233,7 @@
       } else {
         const cancelled = data.status === 'cancelled';
         if ($('buildTitle')) $('buildTitle').textContent = cancelled ? 'Build cancelled' : 'Build failed';
-        if ($('buildMessage')) $('buildMessage').textContent = data.message || 'The Android build did not complete successfully.';
+        if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
         const link = $('downloadApk');
         if (link && data.runUrl) {
           link.href = data.runUrl; link.textContent = 'Open build logs on GitHub';
@@ -244,8 +243,8 @@
     } catch (error) {
       stopPolling();
       if ($('buildTitle')) $('buildTitle').textContent = 'Build status unavailable';
-      if ($('buildMessage')) $('buildMessage').textContent = error.message;
-      toast(error.message);
+      if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
+      toast('Something went wrong. Please try again.');
     } finally {
       polling = false;
       if (activeBuild && (activeBuild.status === 'queued' || activeBuild.status === 'in_progress' || !activeBuild.status)) {
@@ -461,8 +460,11 @@
       if ($('buildTitle')) $('buildTitle').textContent = 'Starting your APK build…';
       if ($('buildMessage')) $('buildMessage').textContent = 'Sending your app settings to the secure build service.';
 
+      const client = await getCloudClient();
+      const { data: authData } = client ? await client.auth.getSession() : { data: { session: null } };
+      if (!authData.session) { window.location.href = '/account#login'; return; }
       const response = await fetch('/api/build', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session.access_token}` },
         body: JSON.stringify(payload)
       });
       const data = await readApiResponse(response);
@@ -480,8 +482,8 @@
     } catch (error) {
       if ($('result')) $('result').classList.remove('hidden');
       if ($('buildTitle')) $('buildTitle').textContent = 'Could not start build';
-      if ($('buildMessage')) $('buildMessage').textContent = error.message;
-      toast(error.message);
+      if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
+      toast('Something went wrong. Please try again.');
     } finally {
       btn.disabled = false;
       if (buttonText) buttonText.textContent = 'Build installable APK';
