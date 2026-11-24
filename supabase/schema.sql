@@ -21,6 +21,7 @@ create table if not exists public.projects (
 );
 alter table public.projects add column if not exists build_id text;
 create unique index if not exists projects_build_id_unique on public.projects(build_id);
+create index if not exists projects_user_created_at_idx on public.projects(user_id, created_at desc);
 create table if not exists public.platform_settings (
   key text primary key,
   value jsonb not null default '{}'::jsonb,
