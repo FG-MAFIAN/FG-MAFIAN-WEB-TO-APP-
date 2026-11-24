@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     if (/^\d{1,20}$/.test(runId)) {
       const response = await fetch(`${base}/actions/runs/${runId}`, { headers });
       if (response.status === 404) return res.status(404).json({ error: 'Something went wrong. Please try again.' });
-      if (!response.ok) console.error('GitHub status lookup failed:', response.status); return res.status(502).json({ error: 'Something went wrong. Please try again.' });
+      if (!response.ok) { console.error('GitHub status lookup failed:', response.status); return res.status(502).json({ error: 'Something went wrong. Please try again.' }); }
       run = await response.json();
     } else {
       const response = await fetch(`${base}/actions/workflows/build-apk.yml/runs?event=workflow_dispatch&per_page=50`, { headers });
