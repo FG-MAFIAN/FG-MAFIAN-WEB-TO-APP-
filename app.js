@@ -33,22 +33,6 @@
     if (data.enabled) { maintenanceNotice.textContent = data.message || 'We are performing maintenance. Please try again soon.'; maintenanceNotice.classList.remove('hidden'); }
   }).catch(() => {});
 
-  const bg = document.querySelector('.bg-video');
-  if (bg) {
-    bg.muted = true; bg.loop = true; bg.playsInline = true;
-    const lowPowerDevice = window.matchMedia?.('(max-width: 850px)').matches || navigator.connection?.saveData;
-    // Keep mobile/data-saver browsing light: the CSS backdrop remains visible without decoding video.
-    if (lowPowerDevice) {
-      bg.pause();
-      bg.removeAttribute('autoplay');
-      bg.preload = 'none';
-    } else {
-      const play = () => { try { const p = bg.play(); if (p?.catch) p.catch(() => {}); } catch {} };
-      play();
-      document.addEventListener('visibilitychange', () => { if (!document.hidden && bg.paused) play(); });
-    }
-  }
-
   const welcome = $('welcome');
   if (welcome) {
     if (safeStorage.get('fgmafian_welcome_seen') === '1') welcome.classList.add('dismissed');
