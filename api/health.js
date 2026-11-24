@@ -8,7 +8,7 @@ export default function handler(req, res) {
   const supabaseConfigured = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY);
   const adminConfigured = Boolean(process.env.ADMIN_EMAILS);
   return res.status(200).json({
-    ok: true, ready: githubConfigured && trackingConfigured && validLimit,
+    ok: true, ready: githubConfigured && validLimit, downloadsReady: trackingConfigured,
     service: 'FG MAFIAN API', workflow: '.github/workflows/build-apk.yml',
     configuration: { github: githubConfigured, atomicDownloadTracking: trackingConfigured,
       downloadLimitPerHour: validLimit ? limit : null, downloadLimitConfigurationValid: validLimit,
