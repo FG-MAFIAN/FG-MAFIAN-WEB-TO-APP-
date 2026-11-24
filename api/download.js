@@ -29,7 +29,7 @@ async function recordCompletedDownload(req, buildId) {
     headers: { Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(['EVAL', script, '2', usageKey, onceKey, String(now - 3600000), String(now), buildId])
   });
-  if (!response.ok) throw new Error(`Redis download record failed (HTTP ${response.status}).`);
+  if (!response.ok) throw new Error('Download tracking failed.');
   const payload = await response.json();
   if (payload.error) throw new Error('Redis rejected the download record.');
 }
@@ -38,8 +38,8 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed.' }); }
   const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO } = process.env;
-  if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return res.status(500).json({ error: 'APK download is not configured. Set GITHUB_TOKEN, GITHUB_OWNER and GITHUB_REPO in Vercel.' });
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return res.status(503).json({ error: 'Download tracking is not configured. Set the Upstash REST URL and token in Vercel.' });
+  if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
 
   const runId = String(req.query?.run_id || '');
   if (!/^\d{1,20}$/.test(runId)) return res.status(400).json({ error: 'Missing or invalid workflow run ID.' });
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   const headers = { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
   try {
     const runResponse = await fetch(`${base}/actions/runs/${runId}`, { headers });
-    if (!runResponse.ok) return res.status(runResponse.status === 404 ? 404 : 502).json({ error: runResponse.status === 404 ? 'The requested workflow run was not found.' : `GitHub workflow lookup failed (HTTP ${runResponse.status}).` });
+    if (!runResponse.ok) return res.status(runResponse.status === 404 ? 404 : 502).json({ error: runResponse.status === 404 ? 'The requested workflow run was not found.' : 'Something went wrong. Please try again.' });
     const run = await runResponse.json();
     if (run.path !== '.github/workflows/build-apk.yml' || run.event !== 'workflow_dispatch') return res.status(403).json({ error: 'This run is not an FG MAFIAN APK build.' });
     const titlePrefix = 'FG MAFIAN APK ';
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 
     const tag = `apk-build-${runId}`;
     const releaseResponse = await fetch(`${base}/releases/tags/${tag}`, { headers });
-    if (!releaseResponse.ok) return res.status(releaseResponse.status === 404 ? 404 : 502).json({ error: releaseResponse.status === 404 ? 'The APK release for this build is not available yet. Refresh the build status and try again.' : `GitHub release lookup failed (HTTP ${releaseResponse.status}).` });
+    if (!releaseResponse.ok) return res.status(releaseResponse.status === 404 ? 404 : 502).json({ error: releaseResponse.status === 404 ? 'The APK release for this build is not available yet. Refresh the build status and try again.' : 'Something went wrong. Please try again.' });
     const release = await releaseResponse.json();
     if (release.draft || release.prerelease || !String(release.body || '').includes(`Workflow Run ID: ${runId}`)) return res.status(403).json({ error: 'The release does not match the requested workflow run.' });
     const asset = (release.assets || []).find(item => item.name === 'fg-mafian-app.apk' && item.state === 'uploaded');
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
       const target = new URL(location);
       if (target.protocol !== 'https:') return res.status(502).json({ error: 'GitHub returned an unsafe download redirect.' });
       const cdn = await fetch(target, { redirect: 'follow' });
-      if (!cdn.ok || !cdn.body) return res.status(502).json({ error: `GitHub CDN download failed (HTTP ${cdn.status}).` });
+      if (!cdn.ok || !cdn.body) return res.status(502).json({ error: 'Something went wrong. Please try again.' });
       res.setHeader('Content-Type', 'application/vnd.android.package-archive');
       res.setHeader('Content-Disposition', 'attachment; filename="fg-mafian-app.apk"');
       const size = cdn.headers.get('content-length'); if (size) res.setHeader('Content-Length', size);
@@ -87,7 +87,7 @@ export default async function handler(req, res) {
       await recordCompletedDownload(req, buildId);
       return;
     }
-    return res.status(502).json({ error: `GitHub could not provide the APK download (HTTP ${assetResponse.status}).` });
+    return res.status(502).json({ error: 'Something went wrong. Please try again.' });
   } catch (error) {
     console.error('APK download error:', error);
     if (!res.headersSent) return res.status(502).json({ error: 'Could not prepare the APK download. Please try again.' });
