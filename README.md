@@ -11,7 +11,7 @@ Build online · Track progress · Download your APK directly</p>
 <a href="https://t.me/FG_MAFIAN">
   <img src="https://img.shields.io/badge/CONTACT%20OWNER-Telegram-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Contact owner">
 </a>
-<a href="https://t.me/fgmafian">
+<a href="https://t.me/mafian_tech">
   <img src="https://img.shields.io/badge/JOIN%20CHANNEL-Telegram-20B77A?style=for-the-badge&logo=telegram&logoColor=white" alt="Join channel">
 </a>
 
@@ -53,7 +53,7 @@ Use the website navigation to open **Home**, **Create App**, **My Builds**, **Qu
 | Contact | Link |
 |---|---|
 | Owner | [Precious Famile — Contact on Telegram](https://t.me/FG_MAFIAN) |
-| Telegram channel | [Join FG MAFIAN](https://t.me/fgmafian) |
+| Telegram channel | [Join FG MAFIAN](https://t.me/mafian_tech) |
 | Website | [Open FG MAFIAN Builder](https://web-to-app-builder.vercel.app/) |
 
 ## 🛠️ Deployment notes
@@ -94,7 +94,7 @@ A working API should return JSON with `"ok": true`.
 
 <a href="https://web-to-app-builder.vercel.app/">Website</a> ·
 <a href="https://t.me/FG_MAFIAN">Contact owner</a> ·
-<a href="https://t.me/fgmafian">Join channel</a>
+<a href="https://t.me/mafian_tech">Join channel</a>
 
 </div>
 
