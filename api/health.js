@@ -1,5 +1,5 @@
 export default function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ ok: false, error: 'Something went wrong. Please try again.' }); }
-  return res.status(200).json({ ok: true, service: 'FG MAFIAN' });
+  return res.status(200).json({ ok: true, service: 'AppForge' });
 }
