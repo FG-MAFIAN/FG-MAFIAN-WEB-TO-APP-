@@ -26,7 +26,7 @@ export default async function handler(req, res) {
         supabaseRequest(root, key, 'system_logs?select=id,level,source,message,path,created_at,user_id&order=created_at.desc&limit=100')
       ]);
       if (!profilesRes.ok || !projectsRes.ok) throw new Error('Could not load admin data. Run supabase/schema.sql in your Supabase SQL editor.');
-      return json(res, 200, { ok: true, admin: user.email, users: await profilesRes.json(), projects: await projectsRes.json(), systemLogs: logsRes.ok ? await logsRes.json() : [] });
+      return json(res, 200, { ok: true, admin: user.email, users: await profilesRes.json(), projects: await projectsRes.json(), systemLogs: logsRes.ok ? await logsRes.json() : [], diagnostics: { github: Boolean(process.env.GITHUB_TOKEN && process.env.GITHUB_OWNER && process.env.GITHUB_REPO), supabase: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY), emailVerification: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY), downloadTracking: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) } });
     }
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     if (body.action === 'user-update') {
