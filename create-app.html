@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#070914"><meta name="description" content="FG MAFIAN real Android APK builder."><title>Create App | FG MAFIAN</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css"><script>(function(){try{var t=localStorage.getItem("fgmafian_theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;else if(matchMedia("(prefers-color-scheme: light)").matches)document.documentElement.dataset.theme="light";}catch(e){}})();</script><script src="/theme.js" defer></script></head><body><div class="backdrop"></div><header class="topbar"><a class="brand" href="/"><span class="brand-mark small">FM</span><span>FG <b>MAFIAN</b><small>ANDROID APP BUILDER</small></span></a><nav class="multi-nav" aria-label="Main navigation"><a class="nav-home" href="/">⌂ Home</a><a href="/create-app">＋ Create App</a><a href="/builds">▣ My Builds</a><a href="/account">♙ Account</a><a href="/docs">▤ Quick Guide</a><a href="/about">ⓘ About</a></nav><a class="contact-mini" href="https://t.me/FG_MAFIAN" target="_blank" rel="noopener">Contact owner</a></header><main><div id="maintenanceNotice" class="maintenance-notice hidden" role="status"></div><section id="builder" class="builder-section">
-      <div class="section-heading"><p class="eyebrow">THE CREATION STUDIO</p><h2>Build your installable Android app</h2><p class="muted">Add your website and choose how your app should look.</p></div>
+      <div class="section-heading"><p class="eyebrow">THE CREATION STUDIO</p><h2>Build your installable Android app</h2><p class="muted">Enter your website, set its identity, and customize supported Android behavior.</p></div>
       <div class="builder-grid">
         <form id="appForm" class="form-card glass">
           <div class="form-title"><span class="step">01</span><div><h3>Website details</h3><p class="muted">Where should your app take users?</p></div></div>
@@ -18,7 +18,7 @@
             <label>Theme color<input id="themeColor" type="color" value="#3978ff"></label>
             <label>Splash background<input id="splashColor" type="color" value="#070914"></label>
           </div>
-          <div class="form-title second"><span class="step">03</span><div><h3>App behavior</h3><p class="muted">Choose your preferred settings.</p></div></div>
+          <div class="form-title second"><span class="step">03</span><div><h3>App behavior</h3><p class="muted">Set orientation, full-screen behavior, and touch controls.</p></div></div>
           <div class="two-col">
             <label>Orientation<select id="orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option><option value="any">Auto</option></select></label>
             <label>Display mode<select id="displayMode"><option value="fullscreen">Fullscreen</option><option value="standalone">Standalone</option></select></label>
@@ -27,6 +27,17 @@
             <label class="switch-row"><span>Pull to refresh</span><input id="pullRefresh" type="checkbox" checked><i></i></label>
             <label class="switch-row"><span>Show navigation controls</span><input id="navControls" type="checkbox"><i></i></label>
           </div>
+          <div class="form-title second"><span class="step">04</span><div><h3>Advanced Android settings</h3><p class="muted">Fine-tune how the app behaves on a phone.</p></div></div>
+          <div class="two-col">
+            <label>Status bar color<input id="statusBarColor" type="color" value="#070914"></label>
+            <label>Status bar icons<select id="statusBarStyle"><option value="light">Light icons (dark background)</option><option value="dark">Dark icons (light background)</option></select></label>
+          </div>
+          <div class="switches">
+            <label class="switch-row"><span>Allow pinch-to-zoom</span><input id="allowZoom" type="checkbox"><i></i></label>
+            <label class="switch-row"><span>Keep screen awake while using app</span><input id="keepScreenOn" type="checkbox"><i></i></label>
+            <label class="switch-row"><span>Prevent screenshots and screen recording</span><input id="preventScreenshots" type="checkbox"><i></i></label>
+          </div>
+          <p class="fine-print">Website content is loaded from its HTTPS address, so an internet connection is required. The website must allow embedding in Android WebView.</p>
           <button class="btn btn-primary full generate" type="submit"><span>Build installable APK</span><b>↗</b></button>
           <p class="fine-print">Your website URL and the two optional compressed logo images are sent to the secure build service so they can be added to the APK.</p>
         </form>
