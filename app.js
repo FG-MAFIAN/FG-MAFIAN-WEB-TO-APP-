@@ -447,6 +447,11 @@
         displayMode: $('displayMode')?.value || 'standalone',
         pullRefresh: Boolean($('pullRefresh')?.checked),
         navControls: Boolean($('navControls')?.checked),
+        statusBarColor: $('statusBarColor')?.value || '#070914',
+        statusBarStyle: $('statusBarStyle')?.value || 'light',
+        allowZoom: Boolean($('allowZoom')?.checked),
+        keepScreenOn: Boolean($('keepScreenOn')?.checked),
+        preventScreenshots: Boolean($('preventScreenshots')?.checked),
         logoData, splashLogoData
       };
       if ($('result')) $('result').classList.remove('hidden');
