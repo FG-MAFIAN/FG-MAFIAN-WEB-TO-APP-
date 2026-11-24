@@ -78,6 +78,39 @@ on:
         options:
           - 'true'
           - 'false'
+      status_bar_color:
+        description: Android status bar color
+        required: true
+        type: string
+        default: '#070914'
+      status_bar_style:
+        description: Android status bar icon color
+        required: true
+        type: choice
+        options:
+          - light
+          - dark
+      allow_zoom:
+        description: Allow pinch-to-zoom in the website
+        required: true
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      keep_screen_on:
+        description: Keep the device screen awake
+        required: true
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      prevent_screenshots:
+        description: Prevent screenshots and screen recording
+        required: true
+        type: choice
+        options:
+          - 'true'
+          - 'false'
       build_id:
         description: Unique build correlation ID
         required: true
@@ -200,6 +233,11 @@ jobs:
           DISPLAY_MODE: ${{ inputs.display_mode }}
           PULL_REFRESH: ${{ inputs.pull_refresh }}
           NAV_CONTROLS: ${{ inputs.nav_controls }}
+          STATUS_BAR_COLOR: ${{ inputs.status_bar_color }}
+          STATUS_BAR_STYLE: ${{ inputs.status_bar_style }}
+          ALLOW_ZOOM: ${{ inputs.allow_zoom }}
+          KEEP_SCREEN_ON: ${{ inputs.keep_screen_on }}
+          PREVENT_SCREENSHOTS: ${{ inputs.prevent_screenshots }}
         run: |
           python -m pip install --quiet pillow
           python <<'PY'
@@ -270,7 +308,8 @@ jobs:
               'colorPrimary': theme,
               'colorPrimaryDark': theme,
               'colorAccent': theme,
-              'splash_background': splash
+              'splash_background': splash,
+              'status_bar': os.environ.get('STATUS_BAR_COLOR', theme)
           }
           for name, value in color_values.items():
               node = colors_root.find("color[@name='" + name + "']")
@@ -291,8 +330,11 @@ jobs:
                       is_launch_style = 'Launch' in style.attrib.get('name', '')
                       for item in style.findall('item'):
                           name = item.attrib.get('name', '')
-                          if name in ('colorPrimary', 'colorPrimaryDark', 'colorAccent', 'android:colorPrimary', 'android:colorPrimaryDark', 'android:colorAccent', 'android:statusBarColor', 'android:navigationBarColor'):
+                          if name in ('colorPrimary', 'colorPrimaryDark', 'colorAccent', 'android:colorPrimary', 'android:colorPrimaryDark', 'android:colorAccent', 'android:navigationBarColor'):
                               item.text = theme
+                              changed = True
+                          elif name in ('android:statusBarColor', 'statusBarColor'):
+                              item.text = '@color/status_bar'
                               changed = True
                           elif name in ('android:windowSplashScreenBackground', 'windowSplashScreenBackground'):
                               item.text = '@color/splash_background'
@@ -404,7 +446,7 @@ jobs:
           if main_activity:
               source = main_activity.read_text(encoding='utf-8')
               if 'FG_MAFIAN_NATIVE_SETTINGS' not in source:
-                  imports = 'import android.os.Bundle;\nimport android.view.View;\nimport android.view.WindowManager;\nimport android.view.MotionEvent;\nimport android.webkit.WebView;\n'
+                  imports = 'import android.os.Bundle;\nimport android.graphics.Color;\nimport android.view.View;\nimport android.view.WindowManager;\nimport android.view.MotionEvent;\nimport android.webkit.WebView;\n'
                   package_end = source.find(';')
                   source = source[:package_end + 1] + '\n' + imports + source[package_end + 1:]
                   method = '''
@@ -425,7 +467,23 @@ jobs:
                       );
                   }
               }
+              if ("${{ inputs.keep_screen_on }}".equals("true")) {
+                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+              }
+              if ("${{ inputs.prevent_screenshots }}".equals("true")) {
+                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+              }
+              getWindow().setStatusBarColor(Color.parseColor("${{ inputs.status_bar_color }}"));
+              if ("${{ inputs.status_bar_style }}".equals("dark")) {
+                  View decor = getWindow().getDecorView();
+                  decor.setSystemUiVisibility(decor.getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+              }
               final boolean pullRefresh = "${{ inputs.pull_refresh }}".equals("true");
+              if (getBridge() != null && getBridge().getWebView() != null) {
+                  getBridge().getWebView().getSettings().setSupportZoom("${{ inputs.allow_zoom }}".equals("true"));
+                  getBridge().getWebView().getSettings().setBuiltInZoomControls("${{ inputs.allow_zoom }}".equals("true"));
+                  getBridge().getWebView().getSettings().setDisplayZoomControls(false);
+              }
               if (pullRefresh && getBridge() != null && getBridge().getWebView() != null) {
                   final WebView webView = getBridge().getWebView();
                   final float[] startY = new float[] {0f};
