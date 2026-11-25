@@ -17,7 +17,7 @@
  });
  $('checkPackage')?.addEventListener('click',()=>{
   const value=$('packageValue').value.trim();
-  const ok=value.length<=180&&/^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$/.test(value);
+  const ok=value.length<=180&&/^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$/.test(value);
   show('packageOutput',ok?'Valid package ID format.':'Invalid format. Use a value such as com.company.myapp.');
  });
  $('checkWebsite')?.addEventListener('click',()=>{
