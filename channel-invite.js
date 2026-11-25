@@ -62,7 +62,13 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
   function schedule() {
     if (timer) clearTimeout(timer);
     let last = 0;
-    try { last = Number(localStorage.getItem(lastKey) || 0); } catch {}
+    try {
+      last = Number(localStorage.getItem(lastKey) || 0);
+      if (!last) {
+        last = Date.now();
+        localStorage.setItem(lastKey, String(last));
+      }
+    } catch {}
     const wait = last ? Math.max(0, interval - (Date.now() - last)) : interval;
     timer = setTimeout(show, wait);
   }
