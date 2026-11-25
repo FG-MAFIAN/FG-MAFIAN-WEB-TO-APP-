@@ -58,6 +58,20 @@ async function load() {
     $('systemLogs').append(row);
   });
   if (!(data.systemLogs || []).length) $('systemLogs').textContent = 'No error reports have been recorded.';
+  const ratings = data.ratings || [];
+  const average = ratings.length ? (ratings.reduce((sum, item) => sum + Number(item.rating || 0), 0) / ratings.length).toFixed(1) : '—';
+  if ($('ratingStats')) $('ratingStats').textContent = ratings.length ? `${average} / 5 stars · ${ratings.length} rating(s)` : 'No ratings yet.';
+  $('appRatings')?.replaceChildren();
+  ratings.forEach(item => {
+    const row = node('div', 'admin-user');
+    const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
+    const score = Math.max(0, Math.min(5, Number(item.rating || 0)));
+    row.append(node('b', '', `${'★'.repeat(score)}${'☆'.repeat(5-score)} · ${item.app_name || 'App build'}`));
+    row.append(node('small', '', `${profile?.email || item.user_id} · ${new Date(item.created_at).toLocaleString()} · ${item.package_id || ''}`));
+    if (item.reason) row.append(node('p', 'muted', item.reason));
+    $('appRatings')?.append(row);
+  });
+  if (!ratings.length && $('appRatings')) $('appRatings').textContent = 'No ratings have been submitted yet.';
   $('adminProjects').replaceChildren();
   data.projects.forEach(project => {
     const row = node('div', 'admin-user');
