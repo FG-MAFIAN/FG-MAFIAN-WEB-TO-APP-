@@ -67,6 +67,7 @@ async function dispatch(context) {
   }
   const req = {
     method: context.request.method,
+    env: context.env,
     headers,
     body,
     query: Object.fromEntries(url.searchParams.entries()),
