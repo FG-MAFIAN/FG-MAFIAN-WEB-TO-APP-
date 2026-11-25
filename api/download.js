@@ -1,3 +1,4 @@
+const getEnv = req => req?.env || process.env;
 import { createHash } from 'node:crypto';
 
 function clientKey(req) {
@@ -10,22 +11,22 @@ function clientKey(req) {
   return createHash('sha256').update(ip).digest('hex');
 }
 
-function downloadLimit() {
-  const raw = process.env.DOWNLOAD_LIMIT_PER_HOUR;
+function downloadLimit(req) {
+  const raw = getEnv(req).DOWNLOAD_LIMIT_PER_HOUR;
   if (raw === undefined || raw === '') return 3;
   const value = Number(raw);
   return Number.isInteger(value) && value >= 0 ? value : 3;
 }
 
 async function reserveDownload(req, buildId) {
-  const { UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } = process.env;
+  const { UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } = getEnv(req);
   if (!UPSTASH_REDIS_REST_URL || !UPSTASH_REDIS_REST_TOKEN) throw new Error('Download tracking is not configured.');
 
   const now = Date.now();
   const key = clientKey(req);
   const usageKey = `appforge:downloads:${key}`;
   const onceKey = `appforge:downloaded:${key}:${buildId}`;
-  const limit = downloadLimit();
+  const limit = downloadLimit(req);
   const script = `
     redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[1])
     local existing = redis.call('EXISTS', KEYS[2])
@@ -56,9 +57,9 @@ async function reserveDownload(req, buildId) {
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed.' }); }
-  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO } = process.env;
+  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO } = getEnv(req);
   if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
+  if (!getEnv(req).UPSTASH_REDIS_REST_URL || !getEnv(req).UPSTASH_REDIS_REST_TOKEN) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
 
   const runId = String(req.query?.run_id || '');
   if (!/^\d{1,20}$/.test(runId)) return res.status(400).json({ error: 'Missing or invalid workflow run ID.' });
