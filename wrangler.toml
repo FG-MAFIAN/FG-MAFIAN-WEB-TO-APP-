@@ -1,5 +1,13 @@
 name = "fg-mafian-apk-builder-pro"
 pages_build_output_dir = "."
-keep_vars = true
 compatibility_date = "2026-10-31"
 compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
+
+[vars]
+SUPABASE_URL = "https://jlbjaowdoljhglmgyhha.supabase.co"
+GITHUB_OWNER = "FG-MAFIAN"
+GITHUB_REPO = "FG-MAFIAN-WEB-TO-APP-"
+GITHUB_BRANCH = "main"
+ADMIN_EMAILS = "brightessang001@gmail.com"
+DOWNLOAD_LIMIT_PER_HOUR = "3"
+UPSTASH_REDIS_REST_URL = "https://smiling-tetra-67430.upstash.io"
