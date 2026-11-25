@@ -1,7 +1,8 @@
+const getEnv = req => req?.env || process.env;
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed.' }); }
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = getEnv(req);
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return res.status(200).json({ enabled: false, configured: false });
   try {
     const response = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/platform_settings?key=eq.maintenance&select=value&limit=1`, { headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } });
