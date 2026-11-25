@@ -442,7 +442,7 @@
   gameModal?.addEventListener('click', event => { if (event.target === gameModal) closeGame(); });
 
   const form = $('appForm');
-  if (form) getCloudClient().then(async client => { const { data } = client ? await client.auth.getSession() : { data: { session: null } }; if (!data.session) window.location.replace('/account#login'); }).catch(() => window.location.replace('/account#login'));
+  // Guests may explore the builder and preview their site; authentication is requested only when they submit a build.
   form?.addEventListener('submit', async event => {
     event.preventDefault();
     const btn = event.submitter || form.querySelector('[type="submit"]');
@@ -486,7 +486,17 @@
 
       const client = await getCloudClient();
       const { data: authData } = client ? await client.auth.getSession() : { data: { session: null } };
-      if (!authData.session) { window.location.href = '/account#login'; return; }
+      if (!authData.session) {
+        const notice = $('guestBuildNotice');
+        if (notice) {
+          notice.classList.remove('hidden');
+          notice.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          toast('Sign in or create a free account to start your APK build.');
+        }
+        return;
+      }
+      $('guestBuildNotice')?.classList.add('hidden');
       const response = await fetch('/api/build', {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session.access_token}` },
         body: JSON.stringify(payload)
