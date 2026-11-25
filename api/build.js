@@ -1,3 +1,4 @@
+const getEnv = req => req?.env || process.env;
 import { randomUUID } from 'node:crypto';
 
 const MAX_BODY_BYTES = 145000;
@@ -76,7 +77,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return fail(res, 405, 'Method not allowed.'); }
 
-  const { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+  const { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } = getEnv(req);
   const bearer = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '');
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY || !bearer) return fail(res, 401, 'Sign in to create an app.');
   try {
@@ -98,13 +99,13 @@ export default async function handler(req, res) {
     return fail(res, 503, 'Something went wrong. Please try again.');
   }
 
-  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH = 'main' } = process.env;
+  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH = 'main' } = getEnv(req);
   if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return fail(res, 503, 'Something went wrong. Please try again.');
 
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (getEnv(req).SUPABASE_URL && getEnv(req).SUPABASE_SERVICE_ROLE_KEY) {
     try {
-      const settingUrl = `${process.env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/platform_settings?key=eq.maintenance&select=value&limit=1`;
-      const setting = await fetch(settingUrl, { headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` } });
+      const settingUrl = `${getEnv(req).SUPABASE_URL.replace(/\/$/, '')}/rest/v1/platform_settings?key=eq.maintenance&select=value&limit=1`;
+      const setting = await fetch(settingUrl, { headers: { apikey: getEnv(req).SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${getEnv(req).SUPABASE_SERVICE_ROLE_KEY}` } });
       if (setting.ok) {
         const rows = await setting.json();
         if (rows[0]?.value?.enabled) return fail(res, 503, 'The builder is temporarily unavailable. Please try again later.');
