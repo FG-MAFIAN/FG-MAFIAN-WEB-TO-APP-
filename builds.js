@@ -35,6 +35,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     })[status] || 'Status unavailable';
   }
 
+  function updateStats(){const total=rows.length,ready=rows.filter(r=>r.settings?.status==='success').length,active=rows.filter(r=>activeStatuses.has(r.settings?.status)).length;const put=(id,n)=>{const e=document.getElementById(id);if(e)e.textContent=String(n)};put('statTotal',total);put('statReady',ready);put('statActive',active);}
+
   function renderProject(row) {
     const card = node('article', 'saved-project');
     const title = node('b', '', row.name || 'Untitled app');
@@ -46,6 +48,27 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
     return async () => {
       const settings = row.settings || {};
+      const rebuild = node('a','btn btn-ghost','Edit / rebuild');
+      const rebuildUrl = new URL('/create-app', location.origin);
+      rebuildUrl.searchParams.set('site', row.site_url || '');
+      rebuildUrl.searchParams.set('name', row.name || '');
+      rebuildUrl.searchParams.set('package', row.package_id || '');
+      rebuild.href = rebuildUrl.pathname + rebuildUrl.search;
+      const remove = node('button','btn btn-ghost','Delete');
+      remove.type = 'button';
+      remove.addEventListener('click', async () => {
+        if (!confirm('Delete this saved project from your account? This does not cancel a running GitHub build.')) return;
+        remove.disabled = true;
+        try {
+          const { error } = await client.from('projects').delete().eq('id',row.id).eq('user_id',session.user.id);
+          if (error) throw error;
+          card.remove();
+          rows = rows.filter(item => item.id !== row.id);
+          updateStats();
+          empty.classList.toggle('hidden',rows.length>0);
+        } catch { status.textContent = 'Could not delete this project. Please try again.'; remove.disabled = false; }
+      });
+      actions.append(rebuild,remove);
       if (!row.build_id) {
         status.textContent = 'Saved project · no build has been linked yet';
         const create = node('a', 'btn btn-primary', 'Create APK');
@@ -81,6 +104,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
         if (JSON.stringify(updatedSettings) !== JSON.stringify(settings)) {
           row.settings = updatedSettings;
+          updateStats();
           await client.from('projects')
             .update({ settings: updatedSettings })
             .eq('id', row.id)
@@ -137,6 +161,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
       if (error) throw error;
 
       rows = data || [];
+      updateStats();
       list.replaceChildren();
       empty.classList.toggle('hidden', rows.length > 0);
       rows.forEach(row => {
