@@ -62,7 +62,7 @@ function validate(body) {
 }
 
 async function consumeBuildLimit(env, key, limit, windowSeconds = 3600) {
-  const base = String(env.UPSTASH_REDIS_REST_URL || '').replace(/\\/$/, '');
+  const base = String(env.UPSTASH_REDIS_REST_URL || '').replace(/\/$/, '');
   const token = String(env.UPSTASH_REDIS_REST_TOKEN || '');
   if (!base || !token) throw new Error('Build protection is not configured.');
   const redisKey = `fgmafian:build:${key}:${Math.floor(Date.now() / (windowSeconds * 1000))}`;
