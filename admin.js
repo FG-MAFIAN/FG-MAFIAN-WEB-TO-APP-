@@ -100,9 +100,17 @@ async function init() {
     if (maintenance.message) $('maintenanceMessage').value = maintenance.message;
   } catch (error) {
     console.error('Admin dashboard access failed:', error);
-    say('This area is restricted.', true);
-    $('adminUsers').textContent = 'Admin data unavailable.';
-    setTimeout(() => location.replace('/'), 1800);
+    const detail = String(error?.message || 'Admin access could not be verified.').slice(0, 220);
+    say(detail, true);
+    $('adminUsers').textContent = 'Admin data unavailable. Check that you are signed in with the administrator email, then refresh this page.';
+    $('diagnostics').textContent = 'Admin access check failed. Your session may be missing, expired, or the admin API may need setup.';
+    if (detail === 'Not signed in') {
+      const link = document.createElement('a');
+      link.href = '/account#login';
+      link.className = 'btn btn-primary';
+      link.textContent = 'Sign in to continue';
+      $('adminMessage').append(' ', link);
+    }
   }
 }
 $('reloadAdmin').addEventListener('click', () => load().catch(error => { console.error(error); say('Something went wrong. Please try again.', true); }));
