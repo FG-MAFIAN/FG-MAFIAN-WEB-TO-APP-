@@ -92,7 +92,8 @@ $('authForm').addEventListener('submit', async event => {
     }
   } catch (error) {
     console.error('Account flow error:', error); reportPrivateError('account', error);
-    message('Something went wrong. Please check your details and try again.', true);
+    const detail = String(error?.message || 'Please check your details and try again.').replace(/https?:\/\/\S+/g, '[service URL]').slice(0, 220);
+    message(detail, true);
   } finally { $('authSubmit').disabled = false; }
 });
 $('resendCode').addEventListener('click', async () => {
