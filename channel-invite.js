@@ -28,7 +28,10 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
   function syncControls() {
     if (neverButton) neverButton.hidden = !signedInUser;
-    if (signedInUser && isSuppressed()) box.hidden = true;
+    if (signedInUser && isSuppressed()) {
+      box.hidden = true;
+      if (timer) clearTimeout(timer);
+    }
   }
 
   async function refreshSession() {
@@ -66,7 +69,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
   async function show() {
     await refreshSession();
     if (isSuppressed()) return;
-    if (!box.hidden) { schedule(); return; }
+    if (!box.hidden) return;
     box.hidden = false;
     try { localStorage.setItem(lastKey, String(Date.now())); } catch {}
     schedule();
@@ -74,6 +77,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
   function dismiss() {
     box.hidden = true;
+    try { localStorage.setItem(lastKey, String(Date.now())); } catch {}
+    schedule();
   }
 
   closeButtons.forEach(button => button.addEventListener('click', dismiss));
