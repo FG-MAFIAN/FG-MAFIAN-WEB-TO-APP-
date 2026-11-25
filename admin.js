@@ -23,6 +23,9 @@ async function api(method = 'GET', body) {
 }
 async function load() {
   const data = await api();
+  $('adminUserCount').textContent=String((data.users||[]).length);
+  $('adminProjectCount').textContent=String((data.projects||[]).length);
+  $('adminLogCount').textContent=String((data.systemLogs||[]).length);
   $('diagnostics').replaceChildren();
   Object.entries(data.diagnostics || {}).forEach(([name, ready]) => {
     const row = node('div', 'admin-user');
@@ -45,6 +48,7 @@ async function load() {
     controls.append(plan, block); row.append(info, controls); $('adminUsers').append(row);
   });
   if (!data.users.length) $('adminUsers').textContent = 'No accounts yet.';
+  filterUsers();
   $('systemLogs').replaceChildren();
   (data.systemLogs || []).forEach(log => {
     const row = node('div', 'admin-user');
@@ -62,6 +66,8 @@ async function load() {
   });
   if (!data.projects.length) $('adminProjects').textContent = 'No saved projects yet.';
 }
+function filterUsers(){const q=($('adminUserSearch')?.value||'').trim().toLowerCase();document.querySelectorAll('#adminUsers .admin-user').forEach(row=>{row.hidden=!!q&&!row.textContent.toLowerCase().includes(q)});}
+$('adminUserSearch')?.addEventListener('input',filterUsers);
 async function updateUser(userId, changes) {
   try { await api('POST', { action: 'user-update', userId, ...changes }); say('Account updated.'); await load(); }
   catch (error) { console.error('Admin account update failed:', error); say('Something went wrong. Please try again.', true); }
