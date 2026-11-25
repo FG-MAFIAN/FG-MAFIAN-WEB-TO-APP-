@@ -340,3 +340,33 @@ footer strong{color:#475467!important}
 .channel-invite-never input{width:auto}
 .pro-main{padding-top:38px}
 @media(max-width:700px){.topbar{padding:0 16px;height:70px}.topbar .contact-mini{display:none}.brand{font-size:15px}.multi-nav{margin-left:auto}.home-menu-items{right:0;left:auto}.channel-invite-card{padding:24px}}
+
+
+/* Clear navigation and guest-friendly page layout */
+.topbar{justify-content:flex-start!important;gap:18px!important}
+.home-icon-link{width:44px;height:44px;display:grid;place-items:center;flex:0 0 44px;border:1px solid #d0d5dd;border-radius:12px;background:#fff;color:#315d8a;text-decoration:none;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.home-icon-link svg{width:23px;height:23px}
+.home-icon-link:hover{background:#f2f4f7}
+.topbar nav.multi-nav{display:flex!important;margin-left:auto}
+.topbar .contact-mini{margin-left:0}
+.home-menu summary{white-space:nowrap}
+.page-back{display:inline-flex;align-items:center;gap:8px;margin:18px 6.5% 0;padding:9px 13px;border:1px solid #d0d5dd;border-radius:9px;background:#fff;color:#344054;font-size:14px;font-weight:600;text-decoration:none}
+.page-back:hover{background:#f2f4f7}
+.site-footer{position:relative;z-index:2;display:flex;justify-content:center;align-items:center;min-height:64px;margin-top:40px;padding:18px 20px;border-top:1px solid #e4e7ec;background:#fff;color:#667085;font-size:12px;letter-spacing:.02em}
+.site-footer strong{color:#344054;font-weight:700}
+.channel-invite-never[hidden]{display:none!important}
+.guest-build-notice{margin-top:14px;padding:16px;border:1px solid #d0d5dd;border-radius:12px;background:#f8fafc}
+.guest-build-notice h3{margin:0 0 6px;font-size:17px}
+.guest-build-notice p{margin:0 0 12px}
+@media(max-width:850px){
+ .topbar{padding:0 16px!important;height:68px!important;gap:12px!important}
+ .topbar nav.multi-nav{display:flex!important}
+ .topbar .contact-mini{display:inline-flex!important;margin-left:0}
+ .home-menu-items{right:0;left:auto}
+ .page-back{margin-left:16px}
+}
+@media(max-width:480px){
+ .home-icon-link{width:40px;height:40px;flex-basis:40px}
+ .home-menu summary{padding:9px 11px;font-size:13px}
+ .topbar .contact-mini{padding:9px 12px!important;font-size:13px}
+}
