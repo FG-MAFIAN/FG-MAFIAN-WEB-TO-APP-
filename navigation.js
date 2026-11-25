@@ -7,11 +7,11 @@
   document.body.appendChild(backdrop);
   const summary = menu.querySelector('summary');
   const links = [...menu.querySelectorAll('.home-menu-items a')];
-  const current = location.pathname.replace(/\\/$/, '') || '/';
+  const current = location.pathname.replace(/\/$/, '') || '/';
   links.forEach(link => {
     try {
       const url = new URL(link.href, location.href);
-      if (url.origin === location.origin && (url.pathname.replace(/\\/$/, '') || '/') === current) link.setAttribute('aria-current','page');
+      if (url.origin === location.origin && (url.pathname.replace(/\/$/, '') || '/') === current) link.setAttribute('aria-current','page');
     } catch {}
   });
   function setOpen(open) {
