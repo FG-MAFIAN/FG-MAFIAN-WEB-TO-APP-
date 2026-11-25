@@ -408,3 +408,13 @@ body.home-menu-open{overflow:hidden}
 .tool-output{margin-top:14px;padding:14px;border-radius:12px;background:#f8fafc;color:#344054;overflow-wrap:anywhere}
 .tool-output img{display:block;width:min(100%,240px);height:auto;margin:10px auto;background:#fff;padding:8px;border-radius:8px}
 @media(max-width:650px){.tools-grid{grid-template-columns:1fr}}
+
+/* Stable home control and clearly separated navigation overlay */
+.home-menu>summary.home-icon-link{transform:none!important;animation:none!important;rotate:0deg!important;transition:background-color .15s ease,border-color .15s ease!important;position:relative;z-index:913}
+.home-menu>summary.home-icon-link svg{display:block;flex:none;transform:none!important;rotate:0deg!important;animation:none!important}
+.home-menu>summary.home-icon-link:active{transform:none!important}
+.home-menu-backdrop{position:fixed!important;inset:0!important;z-index:800!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;width:100%!important;height:100%!important;background:rgba(16,24,40,.48)!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;opacity:0;pointer-events:none;transition:opacity .18s ease!important}
+.home-menu-backdrop.is-visible{opacity:1;pointer-events:auto}
+.topbar{position:relative!important;z-index:910!important}.topbar>.home-menu{position:relative!important;z-index:911!important}.home-menu-items{z-index:912!important}
+body.home-menu-open{overflow:hidden!important}.home-menu>summary:focus-visible{outline:3px solid rgba(49,93,138,.25);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.home-menu-backdrop{transition:none!important}}
