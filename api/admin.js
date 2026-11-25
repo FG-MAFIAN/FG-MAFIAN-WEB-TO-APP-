@@ -1,3 +1,4 @@
+const getEnv = req => req?.env || process.env;
 const json = (res, status, body) => res.status(status).json(body);
 const supabaseRequest = async (url, key, path, options = {}) => fetch(`${url.replace(/\/$/, '')}/rest/v1/${path}`, {
   ...options,
@@ -7,12 +8,12 @@ const supabaseRequest = async (url, key, path, options = {}) => fetch(`${url.rep
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET' && req.method !== 'POST') { res.setHeader('Allow', 'GET, POST'); return json(res, 405, { error: 'Method not allowed.' }); }
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAILS = '' } = process.env;
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAILS = '' } = getEnv(req);
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return json(res, 503, { error: 'Admin service is not configured. Check the platform environment variables in Cloudflare Pages.' });
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   if (!token) return json(res, 401, { error: 'Sign in with an administrator account.' });
   try {
-    const auth = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, { headers: { apikey: process.env.SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${token}` } });
+    const auth = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, { headers: { apikey: getEnv(req).SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${token}` } });
     if (!auth.ok) return json(res, 401, { error: 'Your session is invalid or expired. Sign in again.' });
     const user = await auth.json();
     const allowed = ADMIN_EMAILS.split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
@@ -27,7 +28,7 @@ export default async function handler(req, res) {
         supabaseRequest(root, key, 'app_ratings?select=id,user_id,build_id,app_name,package_id,rating,reason,created_at,profiles(email)&order=created_at.desc&limit=200')
       ]);
       if (!profilesRes.ok || !projectsRes.ok) throw new Error('Could not load admin data. Run supabase/schema.sql in your Supabase SQL editor.');
-      return json(res, 200, { ok: true, admin: user.email, users: await profilesRes.json(), projects: await projectsRes.json(), systemLogs: logsRes.ok ? await logsRes.json() : [], ratings: ratingsRes.ok ? await ratingsRes.json() : [], diagnostics: { github: Boolean(process.env.GITHUB_TOKEN && process.env.GITHUB_OWNER && process.env.GITHUB_REPO), supabase: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY), authConnection: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY), downloadTracking: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) } });
+      return json(res, 200, { ok: true, admin: user.email, users: await profilesRes.json(), projects: await projectsRes.json(), systemLogs: logsRes.ok ? await logsRes.json() : [], ratings: ratingsRes.ok ? await ratingsRes.json() : [], diagnostics: { github: Boolean(getEnv(req).GITHUB_TOKEN && getEnv(req).GITHUB_OWNER && getEnv(req).GITHUB_REPO), supabase: Boolean(getEnv(req).SUPABASE_URL && getEnv(req).SUPABASE_ANON_KEY && getEnv(req).SUPABASE_SERVICE_ROLE_KEY), authConnection: Boolean(getEnv(req).SUPABASE_URL && getEnv(req).SUPABASE_ANON_KEY), downloadTracking: Boolean(getEnv(req).UPSTASH_REDIS_REST_URL && getEnv(req).UPSTASH_REDIS_REST_TOKEN) } });
     }
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     if (body.action === 'user-update') {
