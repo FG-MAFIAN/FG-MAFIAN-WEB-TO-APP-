@@ -49,6 +49,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
           client.auth.onAuthStateChange((_event, session) => {
             signedInUser = session?.user || null;
             syncControls();
+            if ((!signedInUser || !isSuppressed()) && !timer && box.hidden) schedule();
           });
         }
       }
