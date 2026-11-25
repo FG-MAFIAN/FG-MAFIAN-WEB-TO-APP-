@@ -1,7 +1,8 @@
 export default function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed.' }); }
-  const url = String(process.env.SUPABASE_URL || '').trim();
+  const configuredUrl = String(process.env.SUPABASE_URL || '').trim();
+  const url = configuredUrl.replace(/\\/rest\\/v1\\/?$/i, '').replace(/\\/$/, '');
   const anonKey = String(process.env.SUPABASE_ANON_KEY || '').trim();
   const missing = [];
   if (!url) missing.push('SUPABASE_URL');
