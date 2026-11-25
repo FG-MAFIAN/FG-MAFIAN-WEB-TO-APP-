@@ -2,6 +2,9 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
+  const prefill = new URLSearchParams(location.search);
+  for (const [param,id] of [['site','siteUrl'],['name','appName'],['package','packageId']]) { const value=prefill.get(param); if(value && $(id)) $(id).value=value; }
+  if (prefill.get('name') && $('previewName')) $('previewName').textContent=prefill.get('name');
   const safeStorage = {
     get(key, fallback = null) { try { const value = localStorage.getItem(key); return value === null ? fallback : value; } catch { return fallback; } },
     set(key, value) { try { localStorage.setItem(key, value); return true; } catch { return false; } }
