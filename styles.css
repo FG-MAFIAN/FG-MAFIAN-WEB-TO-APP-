@@ -418,3 +418,58 @@ body.home-menu-open{overflow:hidden}
 .topbar{position:relative!important;z-index:910!important}.topbar>.home-menu{position:relative!important;z-index:911!important}.home-menu-items{z-index:912!important}
 body.home-menu-open{overflow:hidden!important}.home-menu>summary:focus-visible{outline:3px solid rgba(49,93,138,.25);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.home-menu-backdrop{transition:none!important}}
+
+
+/* Final mobile header alignment: keep the home control steady and centered. */
+.topbar{
+  box-sizing:border-box!important;
+  height:64px!important;
+  min-height:64px!important;
+  padding:0 22px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:0!important;
+}
+.topbar>.home-menu{
+  align-self:center!important;
+  margin:0!important;
+}
+.home-menu>summary.home-icon-link{
+  box-sizing:border-box!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:10px!important;
+  line-height:1!important;
+  vertical-align:middle!important;
+}
+.home-menu>summary.home-icon-link svg{
+  width:22px!important;
+  height:22px!important;
+  display:block!important;
+  margin:0!important;
+}
+.home-menu-items{
+  top:calc(100% + 8px)!important;
+  left:0!important;
+  right:auto!important;
+}
+@media(max-width:700px){
+  .topbar{
+    height:64px!important;
+    min-height:64px!important;
+    padding:0 18px!important;
+  }
+  .home-menu>summary.home-icon-link{
+    width:44px!important;
+    height:44px!important;
+    min-width:44px!important;
+    min-height:44px!important;
+  }
+}
