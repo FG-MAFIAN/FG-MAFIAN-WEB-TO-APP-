@@ -43,7 +43,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     const details = node('small', '', `${row.package_id || 'Android app'} · ${new Date(row.created_at).toLocaleString()}`);
     const status = node('p', 'muted', 'Checking build status…');
     const actions = node('div', 'hero-actions');
-    card.append(title, details, status, actions);
+    const statusActions = node('div', 'hero-actions');
+    card.append(title, details, status, actions, statusActions);
     list.append(card);
 
     return async () => {
@@ -73,7 +74,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
         status.textContent = 'Saved project · no build has been linked yet';
         const create = node('a', 'btn btn-primary', 'Create APK');
         create.href = '/create-app';
-        actions.replaceChildren(create);
+        statusActions.replaceChildren(create);
         return false;
       }
 
@@ -92,14 +93,14 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
         if (data.status === 'success' && data.downloadUrl) {
           const download = node('a', 'btn btn-primary', 'Download APK');
           download.href = data.downloadUrl;
-          actions.replaceChildren(download);
+          statusActions.replaceChildren(download);
           updatedSettings.download_url = data.downloadUrl;
         } else if (['failure', 'cancelled'].includes(data.status)) {
           const retry = node('a', 'btn btn-ghost', 'Build again');
           retry.href = '/create-app';
-          actions.replaceChildren(retry);
+          statusActions.replaceChildren(retry);
         } else {
-          actions.replaceChildren(node('span', 'fine-print', 'This page checks progress automatically.'));
+          statusActions.replaceChildren(node('span', 'fine-print', 'This page checks progress automatically.'));
         }
 
         if (JSON.stringify(updatedSettings) !== JSON.stringify(settings)) {
