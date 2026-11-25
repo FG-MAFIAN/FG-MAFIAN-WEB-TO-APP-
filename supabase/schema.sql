@@ -67,3 +67,25 @@ create table if not exists public.system_logs (
 create index if not exists system_logs_created_at_idx on public.system_logs(created_at desc);
 alter table public.system_logs enable row level security;
 revoke all on public.system_logs from anon, authenticated;
+
+
+-- Optional ratings submitted after a successful APK build.
+create table if not exists public.app_ratings (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  build_id text not null,
+  app_name text not null default '',
+  package_id text not null default '',
+  rating integer not null check (rating between 1 and 5),
+  reason text not null default '' check (char_length(reason) <= 500),
+  created_at timestamptz not null default now(),
+  unique (user_id, build_id)
+);
+create index if not exists app_ratings_created_at_idx on public.app_ratings(created_at desc);
+alter table public.app_ratings enable row level security;
+drop policy if exists "Users read own app ratings" on public.app_ratings;
+create policy "Users read own app ratings" on public.app_ratings for select to authenticated using (auth.uid() = user_id);
+drop policy if exists "Users submit own app ratings" on public.app_ratings;
+create policy "Users submit own app ratings" on public.app_ratings for insert to authenticated with check (auth.uid() = user_id);
+revoke all on public.app_ratings from anon;
+grant select, insert on public.app_ratings to authenticated;
