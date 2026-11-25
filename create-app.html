@@ -61,43 +61,26 @@
               <p class="preview-caption">Opening screen preview · logo and background update live</p>
             </div>
             <div class="config-list"><div><span>Platform</span><b>Android APK</b></div><div><span>Framework</span><b>Native Android WebView</b></div><div><span>Output</span><b>Android APK</b></div></div>
-            <div id="result" class="result hidden"><div class="success-icon">✓</div><h3 id="buildTitle">Starting your APK build…</h3><p id="buildMessage" class="muted">Your Android app is being prepared.</p><a id="downloadApk" class="btn btn-primary full hidden" href="#" target="_blank" rel="noopener">Download APK</a><button id="copyPublicDownload" class="btn btn-ghost full hidden" type="button">Copy public download link</button><p id="publicDownloadHint" class="fine-print hidden">Anyone with this link can download this APK. Keep it private if you do not want to share the app publicly.</p></div>
+            <div id="result" class="result hidden"><div class="success-icon">✓</div><h3 id="buildTitle">Starting your APK build…</h3><p id="buildMessage" class="muted">Your Android app is being prepared.</p><a id="downloadApk" class="btn btn-primary full hidden" href="#" target="_blank" rel="noopener">Download APK</a><button id="copyPublicDownload" class="btn btn-ghost full hidden" type="button">Copy public download link</button><p id="publicDownloadHint" class="fine-print hidden">Anyone with this link can download this APK. Keep it private if you do not want to share the app publicly.</p><section id="ratingCard" class="rating-card hidden"><p class="eyebrow">HOW DID IT GO?</p><h3>Rate your new app build</h3><p class="muted">Your feedback is optional and helps us improve.</p><div class="rating-stars" role="group" aria-label="Rate this build from one to five stars"><button type="button" class="rating-star" data-rating="1" aria-label="1 star" aria-pressed="false">★</button><button type="button" class="rating-star" data-rating="2" aria-label="2 stars" aria-pressed="false">★</button><button type="button" class="rating-star" data-rating="3" aria-label="3 stars" aria-pressed="false">★</button><button type="button" class="rating-star" data-rating="4" aria-label="4 stars" aria-pressed="false">★</button><button type="button" class="rating-star" data-rating="5" aria-label="5 stars" aria-pressed="false">★</button></div><label id="ratingReasonWrap" class="hidden">What could be better? (optional)<textarea id="ratingReason" maxlength="500" rows="3" placeholder="Tell us what went wrong or what we can improve…"></textarea></label><p id="ratingMessage" class="fine-print" role="status"></p><div class="rating-actions"><button id="ratingSubmit" type="button" class="btn btn-primary">SUBMIT RATING</button><button id="ratingSkip" type="button" class="btn btn-ghost">MAYBE LATER</button></div></section></div>
           </div>
           <div class="notice glass"><b>Important build note</b><p>APK builds run through the connected GitHub Actions workflow. Users can download and install the generated Android APK. iOS builds are not included.</p></div>
           <div id="gameModal" class="game-modal hidden" role="dialog" aria-modal="true" aria-labelledby="gameModalTitle">
             <div class="game-card glass">
               <button type="button" id="gameClose" class="game-close" aria-label="Close game">×</button>
               <p class="eyebrow">APPFORGE GAME ZONE</p>
-              <h2 id="gameModalTitle">Take a quick break?</h2>
+              <h2 id="gameModalTitle">Your app is building. Play Snake?</h2>
               <section id="gameOffer">
-                <div class="game-symbol" aria-hidden="true">🎮</div>
-                <h3>Play a quick game?</h3>
-                <p class="muted">Your APK build will continue in the background. Play a round of Tic-Tac-Toe, skip the game, or leave this page whenever you like.</p>
-                <div class="game-actions"><button type="button" id="playGameBtn" class="btn btn-primary">PLAY GAME</button><button type="button" id="skipGameBtn" class="btn btn-ghost">SKIP GAME</button></div>
+                <div class="game-symbol" aria-hidden="true">🐍</div>
+                <h3>Play while you wait</h3>
+                <p class="muted">Your APK keeps building in the background. Play Snake or skip it — the game closes automatically when your APK is ready.</p>
+                <div class="game-actions"><button type="button" id="playGameBtn" class="btn btn-primary">PLAY SNAKE</button><button type="button" id="skipGameBtn" class="btn btn-ghost">SKIP GAME</button></div>
               </section>
-              <section id="cyberGame" class="cyber-game hidden">
-                <div id="difficultyPicker" class="difficulty-picker">
-                  <h3>CHOOSE YOUR LEVEL</h3>
-                  <p class="muted">Pick how challenging you want the computer to be.</p>
-                  <div class="difficulty-options">
-                    <button type="button" class="btn btn-ghost difficulty-btn" data-difficulty="easy">EASY</button>
-                    <button type="button" class="btn btn-ghost difficulty-btn" data-difficulty="medium">MEDIUM</button>
-                    <button type="button" class="btn btn-primary difficulty-btn" data-difficulty="hard">HARD</button>
-                  </div>
-                </div>
-                <div id="gamePlayArea" class="hidden">
-                <div class="game-level-row"><span id="gameLevelLabel">LEVEL: MEDIUM</span><button type="button" id="changeDifficultyBtn" class="btn btn-ghost">CHANGE LEVEL</button></div>
-                <div class="game-stats"><span>YOU <b>×</b></span><span>COMPUTER <b>○</b></span></div>
-                <h3>TIC-TAC-TOE</h3>
-                <p class="muted">You are ×. Get three in a row to win.</p>
-                <div id="ticTacToeBoard" class="tic-tac-toe-board" role="group" aria-label="Tic-Tac-Toe board">
-                  <button type="button" class="tic-cell" data-cell="0" aria-label="Square 1"></button><button type="button" class="tic-cell" data-cell="1" aria-label="Square 2"></button><button type="button" class="tic-cell" data-cell="2" aria-label="Square 3"></button>
-                  <button type="button" class="tic-cell" data-cell="3" aria-label="Square 4"></button><button type="button" class="tic-cell" data-cell="4" aria-label="Square 5"></button><button type="button" class="tic-cell" data-cell="5" aria-label="Square 6"></button>
-                  <button type="button" class="tic-cell" data-cell="6" aria-label="Square 7"></button><button type="button" class="tic-cell" data-cell="7" aria-label="Square 8"></button><button type="button" class="tic-cell" data-cell="8" aria-label="Square 9"></button>
-                </div>
-                <p id="gameFeedback" class="guess-feedback" role="status" aria-live="polite">Your turn — choose any square.</p>
-                <div class="game-actions"><button type="button" id="startGameBtn" class="btn btn-primary">NEW GAME</button><button type="button" id="doneGameBtn" class="btn btn-ghost">CLOSE GAME</button></div>
-                </div>
+              <section id="snakeGame" class="snake-game hidden">
+                <div class="snake-score-row"><span>SCORE <b id="snakeScore">0</b></span><span>FG MAFIAN GAME ZONE</span></div>
+                <canvas id="snakeCanvas" width="300" height="300" aria-label="Snake game board"></canvas>
+                <p id="snakeStatus" class="muted" role="status" aria-live="polite">Use the arrow buttons, swipe, or keyboard arrows.</p>
+                <div class="snake-controls" aria-label="Snake direction controls"><span></span><button type="button" data-snake-dir="0,-1" aria-label="Up">▲</button><span></span><button type="button" data-snake-dir="-1,0" aria-label="Left">◀</button><button type="button" data-snake-dir="0,1" aria-label="Down">▼</button><button type="button" data-snake-dir="1,0" aria-label="Right">▶</button></div>
+                <div class="game-actions"><button type="button" id="snakeRestart" class="btn btn-primary">PLAY AGAIN</button><button type="button" id="snakePause" class="btn btn-ghost">PAUSE</button><button type="button" id="snakeClose" class="btn btn-ghost">CLOSE GAME</button></div>
               </section>
             </div>
           </div>
