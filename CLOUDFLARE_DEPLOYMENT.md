@@ -68,3 +68,12 @@ Complete a real test: register and verify an account, sign in, create an Android
 - Current output is a debug APK. Google Play distribution requires a signed release build.
 - Payment processing is not connected; Premium is an owner-assigned account label only.
 - Test actual builds and downloads before announcing the service as production-ready.
+
+
+## Recent account and ratings update
+
+- `wrangler.toml` explicitly enables `nodejs_compat_populate_process_env` so Pages Function handlers can read dashboard variables through `process.env`.
+- Keep `SUPABASE_URL` and `SUPABASE_ANON_KEY` set for browser sign-in and registration; keep `SUPABASE_SERVICE_ROLE_KEY` server-only.
+- After pulling the latest `main` branch, run the complete updated `supabase/schema.sql` file again in Supabase SQL Editor. It safely creates the `app_ratings` table and its row-level security policies.
+- Optional 1–5 star feedback appears after a successful APK build. Low ratings can include an optional reason. The owner can review ratings in the Admin panel.
+- The Snake game appears after a build request is accepted, can be skipped, and closes automatically when the APK finishes.
