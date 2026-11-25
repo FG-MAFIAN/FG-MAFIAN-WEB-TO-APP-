@@ -14,6 +14,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
   let client = null;
   let signedInUser = null;
   let timer = null;
+  let authListenerRegistered = false;
 
   function neverKey() {
     return signedInUser?.id ? `appforge_channel_never:${signedInUser.id}` : '';
@@ -40,10 +41,13 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
       if (client) {
         const { data } = await client.auth.getSession();
         signedInUser = data?.session?.user || null;
-        client.auth.onAuthStateChange((_event, session) => {
-          signedInUser = session?.user || null;
-          syncControls();
-        });
+        if (!authListenerRegistered) {
+          authListenerRegistered = true;
+          client.auth.onAuthStateChange((_event, session) => {
+            signedInUser = session?.user || null;
+            syncControls();
+          });
+        }
       }
     } catch {
       signedInUser = null;
