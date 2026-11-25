@@ -23,10 +23,11 @@ export default async function handler(req, res) {
       const [profilesRes, projectsRes, logsRes] = await Promise.all([
         supabaseRequest(root, key, 'profiles?select=id,email,display_name,role,plan,is_blocked,created_at&order=created_at.desc&limit=200'),
         supabaseRequest(root, key, 'projects?select=id,user_id,name,package_id,created_at&order=created_at.desc&limit=100'),
-        supabaseRequest(root, key, 'system_logs?select=id,level,source,message,path,created_at,user_id&order=created_at.desc&limit=100')
+        supabaseRequest(root, key, 'system_logs?select=id,level,source,message,path,created_at,user_id&order=created_at.desc&limit=100'),
+        supabaseRequest(root, key, 'app_ratings?select=id,user_id,build_id,app_name,package_id,rating,reason,created_at,profiles(email)&order=created_at.desc&limit=200')
       ]);
       if (!profilesRes.ok || !projectsRes.ok) throw new Error('Could not load admin data. Run supabase/schema.sql in your Supabase SQL editor.');
-      return json(res, 200, { ok: true, admin: user.email, users: await profilesRes.json(), projects: await projectsRes.json(), systemLogs: logsRes.ok ? await logsRes.json() : [], diagnostics: { github: Boolean(process.env.GITHUB_TOKEN && process.env.GITHUB_OWNER && process.env.GITHUB_REPO), supabase: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY), authConnection: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY), downloadTracking: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) } });
+      return json(res, 200, { ok: true, admin: user.email, users: await profilesRes.json(), projects: await projectsRes.json(), systemLogs: logsRes.ok ? await logsRes.json() : [], ratings: ratingsRes.ok ? await ratingsRes.json() : [], diagnostics: { github: Boolean(process.env.GITHUB_TOKEN && process.env.GITHUB_OWNER && process.env.GITHUB_REPO), supabase: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY), authConnection: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY), downloadTracking: Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) } });
     }
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     if (body.action === 'user-update') {
