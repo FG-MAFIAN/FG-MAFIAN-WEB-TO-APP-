@@ -22,14 +22,14 @@ async function init() {
   try {
     const response = await fetch('/api/config', { cache: 'no-store' });
     const config = await response.json();
-    if (!config.configured) { message('Something went wrong. Please try again later.', true); $('authSubmit').disabled = true; return; }
+    if (!config.configured) { const missing = Array.isArray(config.missing) ? config.missing : []; const detail = missing.length ? `Missing Cloudflare variable(s): ${missing.join(', ')}.` : (config.reason || 'Check SUPABASE_URL and SUPABASE_ANON_KEY in Cloudflare Pages → Settings → Variables and Secrets.'); message(detail, true); $('authSubmit').disabled = true; return; }
     supabase = createClient(config.url, config.anonKey);
     const { data } = await supabase.auth.getSession();
     if (data.session) await showProfile(data.session.user);
     supabase.auth.onAuthStateChange((_event, session) => {
       setTimeout(() => { if (session?.user) showProfile(session.user); else hideProfile(); }, 0);
     });
-  } catch { message('Something went wrong. Please try again later.', true); }
+  } catch (error) { console.error('Account initialization failed:', error); message(`Could not connect to account service: ${String(error?.message || 'network error').slice(0, 180)}`, true); }
 }
 async function showProfile(user) {
   try { localStorage.setItem('fgmafian_welcome_done', '1'); } catch {}
