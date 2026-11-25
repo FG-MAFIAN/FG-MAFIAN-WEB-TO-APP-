@@ -96,6 +96,7 @@ export default async function handler(req, res) {
 
   const { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } = getEnv(req);
   const bearer = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '');
+  let authenticatedUserId = '';
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY || !bearer) return fail(res, 401, 'Sign in to create an app.');
   try {
     const authResponse = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, {
@@ -103,6 +104,7 @@ export default async function handler(req, res) {
     });
     if (!authResponse.ok) return fail(res, 401, 'Your session has expired. Please sign in again.');
     const account = await authResponse.json();
+    authenticatedUserId = String(account.id || '');
     if (SUPABASE_SERVICE_ROLE_KEY) {
       const profileResponse = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/profiles?id=eq.${encodeURIComponent(account.id)}&select=is_blocked&limit=1`, {
         headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
@@ -118,7 +120,7 @@ export default async function handler(req, res) {
 
   const env = getEnv(req);
   try {
-    const userAllowed = await consumeBuildLimit(env, `user:${account.id}`, 3, 3600);
+    const userAllowed = await consumeBuildLimit(env, `user:${authenticatedUserId}`, 3, 3600);
     if (!userAllowed) return fail(res, 429, 'Build limit reached. Please try again later.');
     const clientIp = String(req.headers?.['cf-connecting-ip'] || '').trim();
     if (clientIp) {
