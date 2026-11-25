@@ -61,6 +61,23 @@ function validate(body) {
   };
 }
 
+async function consumeBuildLimit(env, key, limit, windowSeconds = 3600) {
+  const base = String(env.UPSTASH_REDIS_REST_URL || '').replace(/\\/$/, '');
+  const token = String(env.UPSTASH_REDIS_REST_TOKEN || '');
+  if (!base || !token) throw new Error('Build protection is not configured.');
+  const redisKey = `fgmafian:build:${key}:${Math.floor(Date.now() / (windowSeconds * 1000))}`;
+  const response = await fetch(`${base}/pipeline`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify([['INCR', redisKey], ['EXPIRE', redisKey, windowSeconds]])
+  });
+  if (!response.ok) throw new Error('Build protection service unavailable.');
+  const results = await response.json();
+  const count = Number(results?.[0]?.result);
+  if (!Number.isFinite(count)) throw new Error('Build protection returned an invalid response.');
+  return count <= limit;
+}
+
 async function githubRequest(url, token, options = {}) {
   return fetch(url, {
     ...options,
@@ -97,6 +114,20 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Build account verification error:', error);
     return fail(res, 503, 'Something went wrong. Please try again.');
+  }
+
+  const env = getEnv(req);
+  try {
+    const userAllowed = await consumeBuildLimit(env, `user:${account.id}`, 3, 3600);
+    if (!userAllowed) return fail(res, 429, 'Build limit reached. Please try again later.');
+    const clientIp = String(req.headers?.['cf-connecting-ip'] || '').trim();
+    if (clientIp) {
+      const ipAllowed = await consumeBuildLimit(env, `ip:${clientIp}`, 10, 3600);
+      if (!ipAllowed) return fail(res, 429, 'Too many build requests from this network. Please try again later.');
+    }
+  } catch (error) {
+    console.error('Build rate-limit check failed:', error);
+    return fail(res, 503, 'Build protection is temporarily unavailable. Please try again later.');
   }
 
   const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH = 'main' } = getEnv(req);
