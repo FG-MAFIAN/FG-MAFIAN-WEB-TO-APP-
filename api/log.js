@@ -1,7 +1,8 @@
+const getEnv = req => req?.env || process.env;
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(202).json({ ok: true }); }
-  const { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+  const { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } = getEnv(req);
   const token = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '');
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY || !token) return res.status(202).json({ ok: true });
   try {
