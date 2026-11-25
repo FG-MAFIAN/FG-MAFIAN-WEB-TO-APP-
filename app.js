@@ -226,6 +226,8 @@
       }
       stopPolling();
       if (data.status === 'success' && data.downloadUrl) {
+        closeGame();
+        showBuildRating(build);
         build.downloadUrl = data.downloadUrl; saveBuild(build);
         if ($('buildTitle')) $('buildTitle').textContent = 'Your APK is ready!';
         if ($('buildMessage')) $('buildMessage').textContent = 'Your APK is ready to download directly to this device.';
@@ -257,6 +259,7 @@
         $('publicDownloadHint')?.classList.remove('hidden');
         toast('Your APK is ready. You can download it or share its public link.');
       } else {
+        closeGame();
         const cancelled = data.status === 'cancelled';
         if ($('buildTitle')) $('buildTitle').textContent = cancelled ? 'Build cancelled' : 'Build failed';
         if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
@@ -279,170 +282,73 @@
     }
   }
 
-  // Lightweight Tic-Tac-Toe game. It is independent of the APK build process.
-  const gameModal = $('gameModal');
-  const gameOffer = $('gameOffer');
-  const cyberGame = $('cyberGame');
-  const gameCells = Array.from(document.querySelectorAll('.tic-cell'));
-  let ticBoard = Array(9).fill('');
-  let ticLocked = false;
-  let gameDifficulty = 'medium';
-  const winningLines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  // Snake mini-game runs independently while the APK build is polled.
+  const gameModal = $('gameModal'), gameOffer = $('gameOffer'), snakeGame = $('snakeGame');
+  const snakeCanvas = $('snakeCanvas'), snakeContext = snakeCanvas?.getContext('2d');
+  let snake=[], snakeFood={x:10,y:8}, snakeDirection={x:1,y:0}, snakeNextDirection={x:1,y:0};
+  let snakeTimer=null, snakePoints=0, snakePaused=false;
+  const snakeCells=20, snakeCellSize=15;
+  function placeSnakeFood(){do{snakeFood={x:Math.floor(Math.random()*snakeCells),y:Math.floor(Math.random()*snakeCells)}}while(snake.some(p=>p.x===snakeFood.x&&p.y===snakeFood.y));}
+  function drawSnake(){
+    if(!snakeContext)return;const c=snakeContext;c.fillStyle='#061326';c.fillRect(0,0,300,300);c.strokeStyle='rgba(60,145,255,.10)';
+    for(let i=0;i<=snakeCells;i++){let p=i*snakeCellSize;c.beginPath();c.moveTo(p,0);c.lineTo(p,300);c.stroke();c.beginPath();c.moveTo(0,p);c.lineTo(300,p);c.stroke();}
+    c.fillStyle='#ff5c9a';c.shadowColor='#ff5c9a';c.shadowBlur=12;c.beginPath();c.arc(snakeFood.x*15+7.5,snakeFood.y*15+7.5,5,0,Math.PI*2);c.fill();c.shadowBlur=0;
+    snake.forEach((p,i)=>{c.fillStyle=i?'#24a7ff':'#e8fbff';c.shadowColor='#168bff';c.shadowBlur=i?5:12;c.fillRect(p.x*15+1,p.y*15+1,13,13)});c.shadowBlur=0;
+  }
+  function finishSnake(msg){clearInterval(snakeTimer);snakeTimer=null;if($('snakeStatus'))$('snakeStatus').textContent=msg;}
+  function snakeTick(){
+    snakeDirection=snakeNextDirection;const h={x:snake[0].x+snakeDirection.x,y:snake[0].y+snakeDirection.y};
+    const ate=h.x===snakeFood.x&&h.y===snakeFood.y,body=ate?snake:snake.slice(0,-1);
+    if(h.x<0||h.y<0||h.x>=20||h.y>=20||body.some(p=>p.x===h.x&&p.y===h.y)){finishSnake('Game over — tap PLAY AGAIN to restart.');return;}
+    snake.unshift(h);if(ate){snakePoints+=10;if($('snakeScore'))$('snakeScore').textContent=String(snakePoints);placeSnakeFood();}else snake.pop();drawSnake();
+  }
+  function startSnake(){
+    clearInterval(snakeTimer);snake=[{x:7,y:10},{x:6,y:10},{x:5,y:10}];snakeDirection={x:1,y:0};snakeNextDirection={x:1,y:0};snakePoints=0;snakePaused=false;
+    if($('snakeScore'))$('snakeScore').textContent='0';if($('snakeStatus'))$('snakeStatus').textContent='Use the arrow buttons, swipe, or keyboard arrows.';
+    if($('snakePause'))$('snakePause').textContent='PAUSE';placeSnakeFood();drawSnake();snakeTimer=setInterval(snakeTick,125);
+  }
+  function setSnakeDirection(x,y){if(x===-snakeDirection.x&&y===-snakeDirection.y)return;snakeNextDirection={x,y};}
+  function pauseSnake(){
+    if(snakePaused){snakePaused=false;if($('snakeStatus'))$('snakeStatus').textContent='Game resumed.';snakeTimer=setInterval(snakeTick,125);if($('snakePause'))$('snakePause').textContent='PAUSE';}
+    else if(snakeTimer){snakePaused=true;clearInterval(snakeTimer);snakeTimer=null;if($('snakeStatus'))$('snakeStatus').textContent='Paused.';if($('snakePause'))$('snakePause').textContent='RESUME';}
+  }
+  function closeGame(){clearInterval(snakeTimer);snakeTimer=null;snakePaused=false;gameModal?.classList.add('hidden');}
+  function openGameOffer(){if(!gameModal)return;gameOffer?.classList.remove('hidden');snakeGame?.classList.add('hidden');gameModal.classList.remove('hidden');}
+  $('playGameBtn')?.addEventListener('click',()=>{gameOffer?.classList.add('hidden');snakeGame?.classList.remove('hidden');startSnake();});
+  $('skipGameBtn')?.addEventListener('click',closeGame);$('gameClose')?.addEventListener('click',closeGame);$('snakeClose')?.addEventListener('click',closeGame);
+  $('snakeRestart')?.addEventListener('click',startSnake);$('snakePause')?.addEventListener('click',pauseSnake);
+  document.querySelectorAll('[data-snake-dir]').forEach(b=>b.addEventListener('click',()=>{const [x,y]=b.dataset.snakeDir.split(',').map(Number);setSnakeDirection(x,y);}));
+  document.addEventListener('keydown',e=>{if(gameModal?.classList.contains('hidden'))return;const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};if(k[e.key]){e.preventDefault();setSnakeDirection(...k[e.key]);}if(e.key==='Escape')closeGame();});
+  let snakeTouch=null;snakeCanvas?.addEventListener('touchstart',e=>{const t=e.changedTouches[0];snakeTouch={x:t.clientX,y:t.clientY}},{passive:true});
+  snakeCanvas?.addEventListener('touchend',e=>{if(!snakeTouch)return;const t=e.changedTouches[0],dx=t.clientX-snakeTouch.x,dy=t.clientY-snakeTouch.y;if(Math.max(Math.abs(dx),Math.abs(dy))>18){if(Math.abs(dx)>Math.abs(dy))setSnakeDirection(dx>0?1:-1,0);else setSnakeDirection(0,dy>0?1:-1);}snakeTouch=null;},{passive:true});
+  gameModal?.addEventListener('click',e=>{if(e.target===gameModal)closeGame();});
 
-  function getWinner(board) {
-    for (const [a,b,c] of winningLines) {
-      if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
-    }
-    return board.every(Boolean) ? 'draw' : '';
+  let selectedBuildRating=0,ratingBuild=null;
+  function showBuildRating(build){
+    ratingBuild=build;selectedBuildRating=0;
+    document.querySelectorAll('.rating-star').forEach(s=>{s.classList.remove('selected');s.setAttribute('aria-pressed','false')});
+    $('ratingReasonWrap')?.classList.add('hidden');if($('ratingReason'))$('ratingReason').value='';
+    if($('ratingMessage'))$('ratingMessage').textContent='';$('ratingSubmit')?.classList.remove('hidden');$('ratingSkip')?.classList.remove('hidden');
+    $('ratingCard')?.classList.remove('hidden');
   }
-  function renderTicBoard() {
-    gameCells.forEach((cell, index) => {
-      const mark = ticBoard[index];
-      cell.textContent = mark;
-      cell.classList.toggle('mark-x', mark === 'X');
-      cell.classList.toggle('mark-o', mark === 'O');
-      cell.disabled = Boolean(mark) || ticLocked;
-    });
-  }
-  function endTicRound(result) {
-    ticLocked = true;
-    renderTicBoard();
-    const feedback = $('gameFeedback');
-    if (feedback) feedback.textContent = result === 'X' ? 'You win! Great game.' : result === 'O' ? 'Computer wins. Try again!' : 'It is a draw! Play again.';
-  }
-  function getAvailableMoves(board = ticBoard) {
-    return board.map((value, index) => value ? -1 : index).filter(index => index >= 0);
-  }
-  function chooseComputerMove() {
-    const available = getAvailableMoves();
-    if (!available.length) return -1;
-
-    // Easy: make a legal random move without tactical planning.
-    if (gameDifficulty === 'easy') {
-      return available[Math.floor(Math.random() * available.length)];
-    }
-
-    const findWinningMove = (mark, board = ticBoard) => {
-      for (const index of getAvailableMoves(board)) {
-        const test = board.slice(); test[index] = mark;
-        if (getWinner(test) === mark) return index;
-      }
-      return -1;
-    };
-
-    // Medium: win when possible, block the player's immediate win, otherwise play simply.
-    if (gameDifficulty === 'medium') {
-      const win = findWinningMove('O');
-      if (win >= 0) return win;
-      const block = findWinningMove('X');
-      if (block >= 0) return block;
-      return available.includes(4) ? 4 : available[Math.floor(Math.random() * available.length)];
-    }
-
-    // Hard: minimax searches all possible outcomes and chooses the strongest move.
-    function minimax(board, isComputerTurn, depth) {
-      const result = getWinner(board);
-      if (result === 'O') return 10 - depth;
-      if (result === 'X') return depth - 10;
-      if (result === 'draw') return 0;
-
-      const moves = getAvailableMoves(board);
-      if (isComputerTurn) {
-        let best = -Infinity;
-        for (const index of moves) {
-          board[index] = 'O';
-          best = Math.max(best, minimax(board, false, depth + 1));
-          board[index] = '';
-        }
-        return best;
-      }
-      let best = Infinity;
-      for (const index of moves) {
-        board[index] = 'X';
-        best = Math.min(best, minimax(board, true, depth + 1));
-        board[index] = '';
-      }
-      return best;
-    }
-
-    let bestScore = -Infinity;
-    let bestMoves = [];
-    for (const index of available) {
-      const test = ticBoard.slice();
-      test[index] = 'O';
-      const score = minimax(test, false, 1);
-      if (score > bestScore) { bestScore = score; bestMoves = [index]; }
-      else if (score === bestScore) bestMoves.push(index);
-    }
-    return bestMoves[Math.floor(Math.random() * bestMoves.length)];
-  }
-  function newTicGame() {
-    ticBoard = Array(9).fill('');
-    ticLocked = false;
-    if ($('gameFeedback')) $('gameFeedback').textContent = 'Your turn — choose any square.';
-    renderTicBoard();
-  }
-  function playTicCell(index) {
-    if (ticLocked || ticBoard[index]) return;
-    ticBoard[index] = 'X';
-    let result = getWinner(ticBoard);
-    if (result) { endTicRound(result); return; }
-    ticLocked = true;
-    renderTicBoard();
-    const computerMove = chooseComputerMove();
-    if (computerMove >= 0) ticBoard[computerMove] = 'O';
-    result = getWinner(ticBoard);
-    if (result) endTicRound(result);
-    else {
-      ticLocked = false;
-      renderTicBoard();
-      if ($('gameFeedback')) $('gameFeedback').textContent = 'Your turn — choose a square.';
-    }
-  }
-  function closeGame() {
-    gameModal?.classList.add('hidden');
-  }
-  function openGameOffer() {
-    if (!gameModal) return;
-    gameOffer?.classList.remove('hidden');
-    cyberGame?.classList.add('hidden');
-    gameModal.classList.remove('hidden');
-  }
-
-  function selectGameDifficulty(level) {
-    if (!['easy', 'medium', 'hard'].includes(level)) return;
-    gameDifficulty = level;
-    $('difficultyPicker')?.classList.add('hidden');
-    $('gamePlayArea')?.classList.remove('hidden');
-    const label = $('gameLevelLabel');
-    if (label) label.textContent = `LEVEL: ${level.toUpperCase()}`;
-    document.querySelectorAll('.difficulty-btn').forEach(button => {
-      const selected = button.dataset.difficulty === level;
-      button.classList.toggle('btn-primary', selected);
-      button.classList.toggle('btn-ghost', !selected);
-      button.setAttribute('aria-pressed', String(selected));
-    });
-    newTicGame();
-  }
-  $('playGameBtn')?.addEventListener('click', () => {
-    gameOffer?.classList.add('hidden');
-    cyberGame?.classList.remove('hidden');
-    $('difficultyPicker')?.classList.remove('hidden');
-    $('gamePlayArea')?.classList.add('hidden');
+  document.querySelectorAll('.rating-star').forEach(star=>star.addEventListener('click',()=>{
+    selectedBuildRating=Number(star.dataset.rating||0);
+    document.querySelectorAll('.rating-star').forEach(s=>{const on=Number(s.dataset.rating)<=selectedBuildRating;s.classList.toggle('selected',on);s.setAttribute('aria-pressed',String(on));});
+    $('ratingReasonWrap')?.classList.toggle('hidden',selectedBuildRating>3);
+  }));
+  $('ratingSkip')?.addEventListener('click',()=>$('ratingCard')?.classList.add('hidden'));
+  $('ratingSubmit')?.addEventListener('click',async()=>{
+    const button=$('ratingSubmit');if(!selectedBuildRating||!ratingBuild?.buildId){if($('ratingMessage'))$('ratingMessage').textContent='Choose a star rating first.';return;}
+    button.disabled=true;
+    try{
+      const client=await getCloudClient(),{data}=client?await client.auth.getSession():{data:{session:null}};
+      if(!data?.session?.user)throw new Error('Sign in again to submit your rating.');
+      const {error}=await client.from('app_ratings').insert({user_id:data.session.user.id,build_id:ratingBuild.buildId,app_name:ratingBuild.appName||'',package_id:ratingBuild.appId||'',rating:selectedBuildRating,reason:selectedBuildRating<=3?($('ratingReason')?.value.trim()||''):''});
+      if(error)throw error;if($('ratingMessage'))$('ratingMessage').textContent='Thank you — your rating was saved.';
+      button.classList.add('hidden');$('ratingSkip')?.classList.add('hidden');
+    }catch(error){console.error('Build rating failed:',error);if($('ratingMessage'))$('ratingMessage').textContent=String(error?.message||'Could not save rating. Please try again.');}
+    finally{button.disabled=false;}
   });
-  document.querySelectorAll('.difficulty-btn').forEach(button => {
-    button.addEventListener('click', () => selectGameDifficulty(button.dataset.difficulty));
-  });
-  $('changeDifficultyBtn')?.addEventListener('click', () => {
-    $('gamePlayArea')?.classList.add('hidden');
-    $('difficultyPicker')?.classList.remove('hidden');
-  });
-  $('startGameBtn')?.addEventListener('click', newTicGame);
-  gameCells.forEach((cell, index) => cell.addEventListener('click', () => playTicCell(index)));
-  $('skipGameBtn')?.addEventListener('click', closeGame);
-  $('gameClose')?.addEventListener('click', closeGame);
-  $('doneGameBtn')?.addEventListener('click', closeGame);
-  gameModal?.addEventListener('click', event => { if (event.target === gameModal) closeGame(); });
 
   const form = $('appForm');
   // Guests may explore the builder and preview their site; authentication is requested only when they submit a build.
@@ -514,6 +420,7 @@
       activeBuild = build;
       if ($('buildTitle')) $('buildTitle').textContent = 'Build request accepted';
       if ($('buildMessage')) $('buildMessage').textContent = data.message || 'Your Android app is being prepared. Check My Builds for progress.';
+      openGameOffer();
       checkBuild(build);
     } catch (error) {
       reportPrivateError('app-build', error);
