@@ -390,3 +390,21 @@ footer strong{color:#475467!important}
 .home-menu-items a{display:flex;align-items:center;gap:10px;padding:12px 13px;border-radius:9px;color:#344054;font-size:14px;font-weight:500;text-decoration:none;white-space:normal}
 .home-menu-items a:hover,.home-menu-items a:focus-visible{background:#f2f4f7;color:#182230;outline:none}
 @media(max-width:700px){.topbar{padding:0 16px!important;height:68px!important;min-height:68px!important}.home-menu-items{left:0;right:auto;min-width:min(270px,86vw)}}
+
+
+/* Home navigation: dim and blur the page while the menu is open. */
+.home-menu-backdrop{position:fixed;inset:0;z-index:900;background:rgba(15,23,42,.30);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .18s ease}
+.home-menu-backdrop.is-visible{opacity:1;pointer-events:auto}
+.topbar{position:relative!important;z-index:910!important}
+.topbar>.home-menu{position:relative;z-index:911}
+.home-menu-items{z-index:912!important}
+.home-menu>summary{position:relative;z-index:913}
+body.home-menu-open{overflow:hidden}
+.home-menu-items a[aria-current="page"]{background:#eef4fb;color:#244e75;font-weight:700}
+.tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:960px;margin:0 auto}
+.tool-card{padding:22px;border:1px solid #e4e7ec;border-radius:16px;background:#fff}
+.tool-card h2{margin:0 0 8px;font-size:19px}
+.tool-card p{color:#667085;line-height:1.55}
+.tool-output{margin-top:14px;padding:14px;border-radius:12px;background:#f8fafc;color:#344054;overflow-wrap:anywhere}
+.tool-output img{display:block;width:min(100%,240px);height:auto;margin:10px auto;background:#fff;padding:8px;border-radius:8px}
+@media(max-width:650px){.tools-grid{grid-template-columns:1fr}}
