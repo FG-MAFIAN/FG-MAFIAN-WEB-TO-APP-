@@ -473,3 +473,21 @@ body.home-menu-open{overflow:hidden!important}.home-menu>summary:focus-visible{o
     min-height:44px!important;
   }
 }
+
+/* Snake game and optional build feedback */
+.snake-game{margin-top:18px}
+.snake-score-row{display:flex;justify-content:space-between;align-items:center;color:#91b9e9;font:11px var(--mono);letter-spacing:.08em;margin:12px 0}
+.snake-score-row b{color:#65dfff;font-size:17px;margin-left:7px}
+#snakeCanvas{display:block;width:min(300px,100%);height:auto;margin:12px auto;border:1px solid #168bff66;border-radius:8px;background:#061326;touch-action:none}
+.snake-controls{display:grid;grid-template-columns:repeat(3,48px);justify-content:center;gap:7px;margin:12px auto}
+.snake-controls button{height:42px;border:1px solid #168bff66;border-radius:8px;background:#0a2342;color:#c9edff;font-size:17px;touch-action:manipulation}
+.snake-controls button:active{background:#168bff}
+.rating-card{margin-top:22px;padding:18px;border:1px solid #168bff55;border-radius:10px;background:rgba(5,18,40,.82);text-align:left}
+.rating-card h3{margin:8px 0}
+.rating-stars{display:flex;gap:8px;justify-content:center;margin:16px 0}
+.rating-star{border:0;background:transparent;color:#526783;font-size:34px;line-height:1;cursor:pointer;padding:3px}
+.rating-star.selected{color:#ffc94a;text-shadow:0 0 12px #ffc94a66}
+.rating-card label{display:block;margin-top:12px}
+.rating-card textarea{width:100%;margin-top:8px;background:#061326;border:1px solid #168bff55;border-radius:6px;color:#eaf5ff;padding:12px;resize:vertical}
+.rating-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.rating-actions .btn{flex:1}
