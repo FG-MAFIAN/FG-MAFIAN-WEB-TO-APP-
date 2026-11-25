@@ -1,3 +1,4 @@
+const getEnv = req => req?.env || process.env;
 const headersFor = token => ({
   Authorization: `Bearer ${token}`,
   Accept: 'application/vnd.github+json',
@@ -7,7 +8,7 @@ const headersFor = token => ({
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed.' }); }
-  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO } = process.env;
+  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO } = getEnv(req);
   if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
 
   const runId = String(req.query?.run_id || '');
