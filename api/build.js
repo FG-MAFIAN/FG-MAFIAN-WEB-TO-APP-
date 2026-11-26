@@ -140,9 +140,17 @@ export default async function handler(req, res) {
       body: JSON.stringify({ ref: GITHUB_BRANCH, inputs: { ...inputs, build_id: buildId } })
     });
     if (!dispatch.ok) {
-      const detail = (await dispatch.text()).slice(0, 300);
+      const responseText = await dispatch.text();
+      let detail = '';
+      try {
+        const payload = JSON.parse(responseText);
+        detail = typeof payload?.message === 'string' ? payload.message.slice(0, 240) : '';
+      } catch {
+        detail = responseText.replace(/\s+/g, ' ').slice(0, 240);
+      }
       console.error('GitHub build dispatch rejected:', dispatch.status, detail);
-      return fail(res, 502, `GitHub rejected the build request (HTTP ${dispatch.status}). Check that Actions are enabled and GITHUB_TOKEN has workflow dispatch permission.`);
+      const reason = detail ? ` GitHub says: ${detail}` : '';
+      return fail(res, 502, `GitHub rejected the build request (HTTP ${dispatch.status}).${reason}`);
     }
 
     // workflow_dispatch returns HTTP 204, not a run ID. Match our unique run-name.
