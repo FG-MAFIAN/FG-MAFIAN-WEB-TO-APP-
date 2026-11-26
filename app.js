@@ -29,7 +29,10 @@
     let data;
     try { data = text ? JSON.parse(text) : {}; }
     catch { throw new Error('The build service returned an unreadable response. Please try again.'); }
-    if (!response.ok) throw new Error(typeof data.error === 'string' && data.error.length < 240 ? data.error : `Build request failed (HTTP ${response.status}). Please try again.`);
+    if (!response.ok) {
+      const detail = [data.error, data.message, data.detail].find(value => typeof value === 'string' && value.trim());
+      throw new Error(detail ? detail.trim().slice(0, 700) : `Build request failed (HTTP ${response.status}). Please try again.`);
+    }
     return data;
   }
 
