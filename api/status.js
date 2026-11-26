@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     if (run.path !== '.github/workflows/build-apk.yml' || run.event !== 'workflow_dispatch') {
       return res.status(403).json({ error: 'Something went wrong. Please try again.' });
     }
-    const common = { runId: run.id, status: run.status };
+    const common = { runId: run.id, status: run.status, runUrl: run.html_url || null };
     if (run.status === 'queued' || run.status === 'waiting' || run.status === 'requested' || run.status === 'pending') {
       return res.status(200).json({ ...common, status: 'queued' });
     }
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ...common, status: 'success', downloadUrl: `/api/download?run_id=${encodeURIComponent(run.id)}`, message: 'Your APK is ready to download.' });
     }
     if (run.conclusion === 'cancelled') return res.status(200).json({ ...common, status: 'cancelled', message: 'This APK build was cancelled.' });
-    return res.status(200).json({ ...common, status: 'failure', message: 'Something went wrong. Please try again.' });
+    return res.status(200).json({ ...common, status: 'failure', message: 'GitHub could not complete this APK build. Open the build logs for details.' });
   } catch (error) {
     console.error('Status lookup error:', error);
     return res.status(502).json({ error: 'Something went wrong. Please try again.' });
