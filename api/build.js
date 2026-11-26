@@ -120,7 +120,7 @@ export default async function handler(req, res) {
         const rows = await setting.json();
         if (rows[0]?.value?.enabled) return fail(res, 503, 'The builder is temporarily unavailable. Please try again later.');
       }
-    } catch { console.error('Maintenance check failed.'); return fail(res, 503, 'Something went wrong. Please try again.'); }
+    } catch (error) { console.error('Optional maintenance check failed; allowing build request:', error); }
   }
 
   let inputs;
