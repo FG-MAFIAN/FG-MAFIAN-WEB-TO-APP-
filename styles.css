@@ -491,3 +491,19 @@ body.home-menu-open{overflow:hidden!important}.home-menu>summary:focus-visible{o
 .rating-card textarea{width:100%;margin-top:8px;background:#061326;border:1px solid #168bff55;border-radius:6px;color:#eaf5ff;padding:12px;resize:vertical}
 .rating-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .rating-actions .btn{flex:1}
+
+
+/* Persistent, indeterminate APK build activity indicator. */
+.build-progress-heading{display:flex;align-items:center;gap:9px;margin:0 0 10px;color:#3978ff;font:700 11px var(--mono);letter-spacing:.12em}
+.build-live-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px #22c55e22;animation:buildPulse 1.5s ease-in-out infinite}
+.build-progress-track{height:6px;overflow:hidden;border-radius:99px;background:#dce7f5;margin-bottom:18px}
+.build-progress-indicator{display:block;width:36%;height:100%;border-radius:99px;background:linear-gradient(90deg,#3978ff,#54c8ff);animation:buildSweep 1.6s ease-in-out infinite}
+@keyframes buildSweep{0%{transform:translateX(-110%)}100%{transform:translateX(300%)}}
+@keyframes buildPulse{50%{opacity:.45;box-shadow:0 0 0 7px #22c55e12}}
+.ttt-game{margin-top:18px}
+.ttt-score-row{display:flex;justify-content:space-between;gap:8px;align-items:center;color:#91b9e9;font:11px var(--mono);letter-spacing:.06em;margin:12px 0}
+.ttt-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:min(300px,100%);margin:14px auto}
+.ttt-cell{aspect-ratio:1;border:1px solid #168bff66;border-radius:12px;background:#0a2342;color:#eaf5ff;font-size:clamp(34px,10vw,54px);font-weight:800;touch-action:manipulation}
+.ttt-cell.is-x{color:#59c4ff}.ttt-cell.is-o{color:#ff83bd}
+.ttt-cell:disabled{opacity:1}
+html[data-theme="light"] .ttt-cell{background:#edf5ff;color:#15243b}
