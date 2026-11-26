@@ -9,43 +9,11 @@
     get(key, fallback = null) { try { const value = localStorage.getItem(key); return value === null ? fallback : value; } catch { return fallback; } },
     set(key, value) { try { localStorage.setItem(key, value); return true; } catch { return false; } }
   };
-  let cloudClientPromise;
-  function getCloudClient() {
-    if (!cloudClientPromise) cloudClientPromise = (async () => {
-      try {
-        const config = await fetch('/api/config', { cache: 'no-store' }).then(r => r.json());
-        if (!config.configured) return null;
-        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-        return createClient(config.url, config.anonKey);
-      } catch { return null; }
-    })();
-    return cloudClientPromise;
-  }
-  async function saveCloudProject(build) {
-    if (!build?.buildId || !build?.appName || !build?.appId || !build?.siteUrl) return;
-    const client = await getCloudClient(); if (!client) return;
-    const { data } = await client.auth.getSession(); const user = data?.session?.user; if (!user) return;
-    await client.from('projects').upsert({
-      user_id: user.id, build_id: build.buildId, name: build.appName,
-      package_id: build.appId, site_url: build.siteUrl,
-      settings: { status: build.status || 'queued', run_id: build.runId || null, download_url: build.publicDownloadUrl || null, version_name: build.versionName || '1.0.0', version_code: build.versionCode || '1' }
-    }, { onConflict: 'build_id' });
-  }
   const maintenanceNotice = document.getElementById('maintenanceNotice');
   if (maintenanceNotice) fetch('/api/maintenance', { cache: 'no-store' }).then(r => r.json()).then(data => {
     if (data.enabled) { maintenanceNotice.textContent = data.message || 'We are performing maintenance. Please try again soon.'; maintenanceNotice.classList.remove('hidden'); }
   }).catch(() => {});
 
-  const welcome = $('welcome');
-  if (welcome) {
-    if (safeStorage.get('fgmafian_welcome_seen') === '1') welcome.classList.add('dismissed');
-    $('continueBtn')?.addEventListener('click', () => {
-      safeStorage.set('fgmafian_welcome_seen', '1');
-      welcome.classList.add('dismissed');
-    });
-  }
-
-  async function reportPrivateError(source, error) { try { const client = await getCloudClient(); const { data } = client ? await client.auth.getSession() : { data: { session: null } }; if (data?.session) await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` }, body: JSON.stringify({ source, message: String(error?.stack || error?.message || error || 'Unknown error').slice(0, 1200), path: location.pathname }) }); } catch {} }
   let toastTimer;
   function toast(message) {
     const el = $('toast');
@@ -198,7 +166,6 @@
     builds.unshift(build);
     safeStorage.set('fgmafian_build_history', JSON.stringify(builds.slice(0, 20)));
     safeStorage.set('fgmafian_latest_build', JSON.stringify(build));
-    saveCloudProject(build).catch(() => {});
   }
 
   let pollTimer = null;
@@ -445,7 +412,7 @@
   gameModal?.addEventListener('click', event => { if (event.target === gameModal) closeGame(); });
 
   const form = $('appForm');
-  // Guests may explore the builder and preview their site; authentication is requested only when they submit a build.
+  // Anyone can create an APK without an account.
   form?.addEventListener('submit', async event => {
     event.preventDefault();
     const btn = event.submitter || form.querySelector('[type="submit"]');
@@ -487,21 +454,8 @@
       if ($('buildTitle')) $('buildTitle').textContent = 'Starting your APK build…';
       if ($('buildMessage')) $('buildMessage').textContent = 'Sending your app settings to the secure build service.';
 
-      const client = await getCloudClient();
-      const { data: authData } = client ? await client.auth.getSession() : { data: { session: null } };
-      if (!authData.session) {
-        const notice = $('guestBuildNotice');
-        if (notice) {
-          notice.classList.remove('hidden');
-          notice.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-          toast('Sign in or create a free account to start your APK build.');
-        }
-        return;
-      }
-      $('guestBuildNotice')?.classList.add('hidden');
       const response = await fetch('/api/build', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session.access_token}` },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const data = await readApiResponse(response);
@@ -516,7 +470,6 @@
       if ($('buildMessage')) $('buildMessage').textContent = data.message || 'Your Android app is being prepared. Check My Builds for progress.';
       checkBuild(build);
     } catch (error) {
-      reportPrivateError('app-build', error);
       if ($('result')) $('result').classList.remove('hidden');
       if ($('buildTitle')) $('buildTitle').textContent = 'Could not start build';
       if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
