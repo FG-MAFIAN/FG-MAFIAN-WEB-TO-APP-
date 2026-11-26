@@ -83,6 +83,7 @@ async function githubRequest(url, token, options = {}) {
     ...options,
     headers: {
       Authorization: `Bearer ${token}`,
+      'User-Agent': 'AppForge',
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
       ...(options.headers || {})
