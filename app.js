@@ -9,43 +9,11 @@
     get(key, fallback = null) { try { const value = localStorage.getItem(key); return value === null ? fallback : value; } catch { return fallback; } },
     set(key, value) { try { localStorage.setItem(key, value); return true; } catch { return false; } }
   };
-  let cloudClientPromise;
-  function getCloudClient() {
-    if (!cloudClientPromise) cloudClientPromise = (async () => {
-      try {
-        const config = await fetch('/api/config', { cache: 'no-store' }).then(r => r.json());
-        if (!config.configured) return null;
-        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-        return createClient(config.url, config.anonKey);
-      } catch { return null; }
-    })();
-    return cloudClientPromise;
-  }
-  async function saveCloudProject(build) {
-    if (!build?.buildId || !build?.appName || !build?.appId || !build?.siteUrl) return;
-    const client = await getCloudClient(); if (!client) return;
-    const { data } = await client.auth.getSession(); const user = data?.session?.user; if (!user) return;
-    await client.from('projects').upsert({
-      user_id: user.id, build_id: build.buildId, name: build.appName,
-      package_id: build.appId, site_url: build.siteUrl,
-      settings: { status: build.status || 'queued', run_id: build.runId || null, download_url: build.publicDownloadUrl || null, version_name: build.versionName || '1.0.0', version_code: build.versionCode || '1' }
-    }, { onConflict: 'build_id' });
-  }
   const maintenanceNotice = document.getElementById('maintenanceNotice');
   if (maintenanceNotice) fetch('/api/maintenance', { cache: 'no-store' }).then(r => r.json()).then(data => {
     if (data.enabled) { maintenanceNotice.textContent = data.message || 'We are performing maintenance. Please try again soon.'; maintenanceNotice.classList.remove('hidden'); }
   }).catch(() => {});
 
-  const welcome = $('welcome');
-  if (welcome) {
-    if (safeStorage.get('fgmafian_welcome_seen') === '1') welcome.classList.add('dismissed');
-    $('continueBtn')?.addEventListener('click', () => {
-      safeStorage.set('fgmafian_welcome_seen', '1');
-      welcome.classList.add('dismissed');
-    });
-  }
-
-  async function reportPrivateError(source, error) { try { const client = await getCloudClient(); const { data } = client ? await client.auth.getSession() : { data: { session: null } }; if (data?.session) await fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` }, body: JSON.stringify({ source, message: String(error?.stack || error?.message || error || 'Unknown error').slice(0, 1200), path: location.pathname }) }); } catch {} }
   let toastTimer;
   function toast(message) {
     const el = $('toast');
@@ -60,11 +28,8 @@
     const text = await response.text();
     let data;
     try { data = text ? JSON.parse(text) : {}; }
-    catch {
-      const preview = text.replace(/\s+/g, ' ').slice(0, 180);
-      throw new Error('Something went wrong. Please try again.');
-    }
-    if (!response.ok) throw new Error('Something went wrong. Please try again.');
+    catch { throw new Error('The build service returned an unreadable response. Please try again.'); }
+    if (!response.ok) throw new Error(typeof data.error === 'string' && data.error.length < 240 ? data.error : `Build request failed (HTTP ${response.status}). Please try again.`);
     return data;
   }
 
@@ -198,7 +163,6 @@
     builds.unshift(build);
     safeStorage.set('fgmafian_build_history', JSON.stringify(builds.slice(0, 20)));
     safeStorage.set('fgmafian_latest_build', JSON.stringify(build));
-    saveCloudProject(build).catch(() => {});
   }
 
   let pollTimer = null;
@@ -227,7 +191,6 @@
       stopPolling();
       if (data.status === 'success' && data.downloadUrl) {
         closeGame();
-        showBuildRating(build);
         build.downloadUrl = data.downloadUrl; saveBuild(build);
         if ($('buildTitle')) $('buildTitle').textContent = 'Your APK is ready!';
         if ($('buildMessage')) $('buildMessage').textContent = 'Your APK is ready to download directly to this device.';
@@ -272,8 +235,8 @@
     } catch (error) {
       stopPolling();
       if ($('buildTitle')) $('buildTitle').textContent = 'Build status unavailable';
-      if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
-      toast('Something went wrong. Please try again.');
+      if ($('buildMessage')) $('buildMessage').textContent = error?.message || 'Something went wrong. Please try again.';
+      toast(error?.message || 'Something went wrong. Please try again.');
     } finally {
       polling = false;
       if (activeBuild && (activeBuild.status === 'queued' || activeBuild.status === 'in_progress' || !activeBuild.status)) {
@@ -323,35 +286,8 @@
   snakeCanvas?.addEventListener('touchend',e=>{if(!snakeTouch)return;const t=e.changedTouches[0],dx=t.clientX-snakeTouch.x,dy=t.clientY-snakeTouch.y;if(Math.max(Math.abs(dx),Math.abs(dy))>18){if(Math.abs(dx)>Math.abs(dy))setSnakeDirection(dx>0?1:-1,0);else setSnakeDirection(0,dy>0?1:-1);}snakeTouch=null;},{passive:true});
   gameModal?.addEventListener('click',e=>{if(e.target===gameModal)closeGame();});
 
-  let selectedBuildRating=0,ratingBuild=null;
-  function showBuildRating(build){
-    ratingBuild=build;selectedBuildRating=0;
-    document.querySelectorAll('.rating-star').forEach(s=>{s.classList.remove('selected');s.setAttribute('aria-pressed','false')});
-    $('ratingReasonWrap')?.classList.add('hidden');if($('ratingReason'))$('ratingReason').value='';
-    if($('ratingMessage'))$('ratingMessage').textContent='';$('ratingSubmit')?.classList.remove('hidden');$('ratingSkip')?.classList.remove('hidden');
-    $('ratingCard')?.classList.remove('hidden');
-  }
-  document.querySelectorAll('.rating-star').forEach(star=>star.addEventListener('click',()=>{
-    selectedBuildRating=Number(star.dataset.rating||0);
-    document.querySelectorAll('.rating-star').forEach(s=>{const on=Number(s.dataset.rating)<=selectedBuildRating;s.classList.toggle('selected',on);s.setAttribute('aria-pressed',String(on));});
-    $('ratingReasonWrap')?.classList.toggle('hidden',selectedBuildRating>3);
-  }));
-  $('ratingSkip')?.addEventListener('click',()=>$('ratingCard')?.classList.add('hidden'));
-  $('ratingSubmit')?.addEventListener('click',async()=>{
-    const button=$('ratingSubmit');if(!selectedBuildRating||!ratingBuild?.buildId){if($('ratingMessage'))$('ratingMessage').textContent='Choose a star rating first.';return;}
-    button.disabled=true;
-    try{
-      const client=await getCloudClient(),{data}=client?await client.auth.getSession():{data:{session:null}};
-      if(!data?.session?.user)throw new Error('Sign in again to submit your rating.');
-      const {error}=await client.from('app_ratings').insert({user_id:data.session.user.id,build_id:ratingBuild.buildId,app_name:ratingBuild.appName||'',package_id:ratingBuild.appId||'',rating:selectedBuildRating,reason:selectedBuildRating<=3?($('ratingReason')?.value.trim()||''):''});
-      if(error)throw error;if($('ratingMessage'))$('ratingMessage').textContent='Thank you — your rating was saved.';
-      button.classList.add('hidden');$('ratingSkip')?.classList.add('hidden');
-    }catch(error){console.error('Build rating failed:',error);if($('ratingMessage'))$('ratingMessage').textContent=String(error?.message||'Could not save rating. Please try again.');}
-    finally{button.disabled=false;}
-  });
-
   const form = $('appForm');
-  // Guests may explore the builder and preview their site; authentication is requested only when they submit a build.
+  // App creation is open to everyone; no account or sign-in is required.
   form?.addEventListener('submit', async event => {
     event.preventDefault();
     const btn = event.submitter || form.querySelector('[type="submit"]');
@@ -393,21 +329,8 @@
       if ($('buildTitle')) $('buildTitle').textContent = 'Starting your APK build…';
       if ($('buildMessage')) $('buildMessage').textContent = 'Sending your app settings to the secure build service.';
 
-      const client = await getCloudClient();
-      const { data: authData } = client ? await client.auth.getSession() : { data: { session: null } };
-      if (!authData.session) {
-        const notice = $('guestBuildNotice');
-        if (notice) {
-          notice.classList.remove('hidden');
-          notice.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-          toast('Sign in or create a free account to start your APK build.');
-        }
-        return;
-      }
-      $('guestBuildNotice')?.classList.add('hidden');
       const response = await fetch('/api/build', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authData.session.access_token}` },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const data = await readApiResponse(response);
@@ -423,11 +346,10 @@
       openGameOffer();
       checkBuild(build);
     } catch (error) {
-      reportPrivateError('app-build', error);
       if ($('result')) $('result').classList.remove('hidden');
       if ($('buildTitle')) $('buildTitle').textContent = 'Could not start build';
-      if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
-      toast('Something went wrong. Please try again.');
+      if ($('buildMessage')) $('buildMessage').textContent = error?.message || 'Something went wrong. Please try again.';
+      toast(error?.message || 'Something went wrong. Please try again.');
     } finally {
       btn.disabled = false;
       if (buttonText) buttonText.textContent = 'Build installable APK';
