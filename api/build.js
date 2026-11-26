@@ -94,46 +94,23 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return fail(res, 405, 'Method not allowed.'); }
 
-  const { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } = getEnv(req);
-  const bearer = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '');
-  let authenticatedUserId = '';
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY || !bearer) return fail(res, 401, 'Sign in to create an app.');
-  try {
-    const authResponse = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, {
-      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${bearer}` }
-    });
-    if (!authResponse.ok) return fail(res, 401, 'Your session has expired. Please sign in again.');
-    const account = await authResponse.json();
-    authenticatedUserId = String(account.id || '');
-    if (SUPABASE_SERVICE_ROLE_KEY) {
-      const profileResponse = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/profiles?id=eq.${encodeURIComponent(account.id)}&select=is_blocked&limit=1`, {
-        headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
-      });
-      if (!profileResponse.ok) throw new Error('Profile check failed');
-      const profiles = await profileResponse.json();
-      if (!profiles.length || profiles[0]?.is_blocked) return fail(res, 403, 'This account cannot create apps.');
-    }
-  } catch (error) {
-    console.error('Build account verification error:', error);
-    return fail(res, 503, 'Something went wrong. Please try again.');
-  }
-
+  // Public APK generation does not require Supabase authentication or an account.
   const env = getEnv(req);
-  try {
-    const userAllowed = await consumeBuildLimit(env, `user:${authenticatedUserId}`, 3, 3600);
-    if (!userAllowed) return fail(res, 429, 'Build limit reached. Please try again later.');
-    const clientIp = String(req.headers?.['cf-connecting-ip'] || '').trim();
-    if (clientIp) {
-      const ipAllowed = await consumeBuildLimit(env, `ip:${clientIp}`, 10, 3600);
-      if (!ipAllowed) return fail(res, 429, 'Too many build requests from this network. Please try again later.');
+  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH = 'main' } = env;
+  const missingBuildConfig = ['GITHUB_TOKEN', 'GITHUB_OWNER', 'GITHUB_REPO'].filter(key => !env[key]);
+  if (missingBuildConfig.length) return fail(res, 503, `Build service configuration is incomplete. Add these server-side settings: ${missingBuildConfig.join(', ')}.`);
+
+  // Optional IP-based abuse protection. Free access does not depend on accounts or an external limiter.
+  const clientIp = String(req.headers?.['cf-connecting-ip'] || req.headers?.['x-real-ip'] || req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+  if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN && clientIp) {
+    try {
+      const allowed = await consumeBuildLimit(env, `ip:${clientIp}`, 8, 3600);
+      if (!allowed) return fail(res, 429, 'Too many builds from this network. Please try again in an hour.');
+    } catch (error) {
+      console.error('Optional build rate-limit check failed; continuing without Upstash:', error);
     }
-  } catch (error) {
-    console.error('Build rate-limit check failed:', error);
-    return fail(res, 503, 'Build protection is temporarily unavailable. Please try again later.');
   }
 
-  const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH = 'main' } = getEnv(req);
-  if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return fail(res, 503, 'Something went wrong. Please try again.');
 
   if (getEnv(req).SUPABASE_URL && getEnv(req).SUPABASE_SERVICE_ROLE_KEY) {
     try {
@@ -165,7 +142,7 @@ export default async function handler(req, res) {
     if (!dispatch.ok) {
       const detail = (await dispatch.text()).slice(0, 300);
       console.error('GitHub build dispatch rejected:', dispatch.status, detail);
-      return fail(res, 502, 'Something went wrong. Please try again.');
+      return fail(res, 502, `GitHub rejected the build request (HTTP ${dispatch.status}). Check that Actions are enabled and GITHUB_TOKEN has workflow dispatch permission.`);
     }
 
     // workflow_dispatch returns HTTP 204, not a run ID. Match our unique run-name.
