@@ -13,7 +13,7 @@ function clientKey(req) {
 
 function downloadLimit(req) {
   const raw = getEnv(req).DOWNLOAD_LIMIT_PER_HOUR;
-  if (raw === undefined || raw === '') return 3;
+  if (raw === undefined || raw === '') return 0;
   const value = Number(raw);
   return Number.isInteger(value) && value >= 0 ? value : 3;
 }
