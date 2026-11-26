@@ -1,25 +1,34 @@
-# FG MAFIAN APK Builder PRO – repair notes
+# AppForge — current repair and verification notes
 
-## Changes in this repair
-- Build submission now dispatches the GitHub Actions workflow and returns immediately instead of polling GitHub repeatedly inside the Vercel function. This avoids wasting the serverless execution window while GitHub registers the run.
-- Build submission no longer requires or checks the Upstash download counter. A build request is not a download and must not consume the download allowance.
-- Health readiness now reports the build service as ready when GitHub configuration and the download-limit value are valid; Upstash remains required by the download endpoint for atomic completed-download tracking.
-- Admin API now validates malformed JSON bodies and returns a clear JSON error instead of throwing a parser exception.
-- Admin browser code now handles non-JSON server responses with a useful error message and checks config/maintenance HTTP responses.
-- Account browser code now reports HTTP configuration errors explicitly.
+## Current changes on main
 
-## Required Vercel environment variables
-Set these for Production (and Preview/Development if those deployments are used):
-- `SUPABASE_URL` – Supabase project URL, without `/rest/v1/`.
-- `SUPABASE_ANON_KEY` – Supabase publishable/anon key.
-- `SUPABASE_SERVICE_ROLE_KEY` – Supabase secret/service-role key. Server-side only; never expose it in browser code or commit it to GitHub.
-- `ADMIN_EMAILS` – comma-separated exact email address(es) allowed to administer the site.
-- `GITHUB_TOKEN` – GitHub token with permission to dispatch Actions workflows, read Actions runs, and create releases/upload release assets in the target repository.
-- `GITHUB_OWNER` – `FG-MAFIAN`.
-- `GITHUB_REPO` – the exact repository containing this website and `.github/workflows/build-apk.yml`.
-- `GITHUB_BRANCH` – branch containing the workflow (commonly `main`; use the actual default branch).
-- `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` – required for download tracking and enforcing the download limit.
-- `DOWNLOAD_LIMIT_PER_HOUR` – optional integer; defaults to `3`; `0` disables the hourly cap but still requires tracking for duplicate protection.
+- Public APK generation no longer requires a Supabase account, email verification or sign-in.
+- The public website no longer displays account creation, login or premium-only controls.
+- Build history is stored locally in the visitor's browser.
+- APK downloads are free by default; an optional limit can be configured explicitly.
+- Upstash is optional for build protection. Missing Upstash settings no longer prevent normal free builds.
+- Cloudflare Pages environment bindings are forwarded to the API handlers.
+- The frontend displays safe, actionable API errors instead of hiding every failure behind a generic message.
+- The health endpoint reports whether required GitHub build settings are present without revealing secret values.
+- Failed builds include a link to their GitHub Actions logs.
 
-## Deployment and verification limits
-`npm run build` performs JavaScript syntax checks only. It passed after these changes. ZIP integrity is checked separately. This package has not been deployed to the user's Vercel project, and external Supabase, GitHub Actions, Upstash, and real Android APK generation cannot be verified without access to those accounts and their correctly configured secrets. Do not treat a successful source check as proof that the live services work.
+## Required server-side environment variables
+
+Configure these in the hosting provider's Production environment:
+
+- `GITHUB_TOKEN` — token allowed to dispatch the repository's Actions workflow, read workflow runs, and access releases.
+- `GITHUB_OWNER` — `FG-MAFIAN`.
+- `GITHUB_REPO` — `FG-MAFIAN-WEB-TO-APP-`.
+- `GITHUB_BRANCH` — `main` (or the branch containing `.github/workflows/build-apk.yml`).
+
+Optional:
+- `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` for IP-based rate limiting.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` only if the legacy maintenance-mode setting is still used.
+
+Do not put any secret in browser code or commit it to GitHub.
+
+## Verification
+
+The repository's Vercel status check should be inspected for the latest commit. Open `/api/health` after deployment; if `buildReady` is false, add the listed missing settings and redeploy.
+
+A successful source/deployment check does not prove that GitHub Actions can dispatch a workflow or that Android can compile an APK. Complete one real build and download test before announcing the generator as fully operational.
