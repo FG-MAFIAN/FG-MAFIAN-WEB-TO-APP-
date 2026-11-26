@@ -61,29 +61,28 @@
               <p class="preview-caption">Opening screen preview · logo and background update live</p>
             </div>
             <div class="config-list"><div><span>Platform</span><b>Android APK</b></div><div><span>Framework</span><b>Native Android WebView</b></div><div><span>Output</span><b>Android APK</b></div></div>
-            <div id="result" class="result hidden"><div class="success-icon">✓</div><h3 id="buildTitle">Starting your APK build…</h3><p id="buildMessage" class="muted">Your Android app is being prepared.</p><a id="downloadApk" class="btn btn-primary full hidden" href="#" target="_blank" rel="noopener">Download APK</a><button id="copyPublicDownload" class="btn btn-ghost full hidden" type="button">Copy public download link</button><p id="publicDownloadHint" class="fine-print hidden">Anyone with this link can download this APK. Keep it private if you do not want to share the app publicly.</p></div>
+            <div id="result" class="result hidden"><div class="build-progress-heading"><span class="build-live-dot"></span><span>BUILD PROGRESS</span></div><div class="build-progress-track" role="progressbar" aria-label="APK build activity"><span class="build-progress-indicator"></span></div><div class="success-icon">✓</div><h3 id="buildTitle">Starting your APK build…</h3><p id="buildMessage" class="muted">Your Android app is being prepared.</p><a id="downloadApk" class="btn btn-primary full hidden" href="#" target="_blank" rel="noopener">Download APK</a><button id="copyPublicDownload" class="btn btn-ghost full hidden" type="button">Copy public download link</button><p id="publicDownloadHint" class="fine-print hidden">Anyone with this link can download this APK. Keep it private if you do not want to share the app publicly.</p></div>
           </div>
           <div class="notice glass"><b>Important build note</b><p>APK builds run through the connected GitHub Actions workflow. Users can download and install the generated Android APK. iOS builds are not included.</p></div>
           <div id="gameModal" class="game-modal hidden" role="dialog" aria-modal="true" aria-labelledby="gameModalTitle">
             <div class="game-card glass">
               <button type="button" id="gameClose" class="game-close" aria-label="Close game">×</button>
               <p class="eyebrow">APPFORGE GAME ZONE</p>
-              <h2 id="gameModalTitle">Your app is building. Play Snake?</h2>
+              <h2 id="gameModalTitle">Your app is building. Play Tic-Tac-Toe?</h2>
               <section id="gameOffer">
-                <div class="game-symbol" aria-hidden="true">🐍</div>
+                <div class="game-symbol" aria-hidden="true">⭕</div>
                 <h3>Play while you wait</h3>
-                <p class="muted">Your APK keeps building in the background. Play Snake or skip it — the game closes automatically when your APK is ready.</p>
-                <div class="game-actions"><button type="button" id="playGameBtn" class="btn btn-primary">PLAY SNAKE</button><button type="button" id="skipGameBtn" class="btn btn-ghost">SKIP GAME</button></div>
+                <p class="muted">Your APK keeps building in the background. Play Tic-Tac-Toe or skip the game. Build progress stays visible on the page.</p>
+                <div class="game-actions"><button type="button" id="playGameBtn" class="btn btn-primary">PLAY TIC-TAC-TOE</button><button type="button" id="skipGameBtn" class="btn btn-ghost">SKIP GAME</button></div>
               </section>
-              <section id="snakeGame" class="snake-game hidden">
-                <div class="snake-score-row"><span>SCORE <b id="snakeScore">0</b></span><span>FG MAFIAN GAME ZONE</span></div>
-                <canvas id="snakeCanvas" width="300" height="300" aria-label="Snake game board"></canvas>
-                <p id="snakeStatus" class="muted" role="status" aria-live="polite">Use the arrow buttons, swipe, or keyboard arrows.</p>
-                <div class="snake-controls" aria-label="Snake direction controls"><span></span><button type="button" data-snake-dir="0,-1" aria-label="Up">▲</button><span></span><button type="button" data-snake-dir="-1,0" aria-label="Left">◀</button><button type="button" data-snake-dir="0,1" aria-label="Down">▼</button><button type="button" data-snake-dir="1,0" aria-label="Right">▶</button></div>
-                <div class="game-actions"><button type="button" id="snakeRestart" class="btn btn-primary">PLAY AGAIN</button><button type="button" id="snakePause" class="btn btn-ghost">PAUSE</button><button type="button" id="snakeClose" class="btn btn-ghost">CLOSE GAME</button></div>
+              <section id="tttGame" class="ttt-game hidden">
+                <div class="ttt-score-row"><span id="tttScore">X 0 — O 0</span><span>FG MAFIAN GAME ZONE</span></div>
+                <div id="tttBoard" class="ttt-board" aria-label="Tic-Tac-Toe board"></div>
+                <p id="tttStatus" class="muted" role="status" aria-live="polite">Your turn: X. Tap any square to play.</p>
+                <div class="game-actions"><button type="button" id="tttRestart" class="btn btn-primary">NEW GAME</button><button type="button" id="tttClose" class="btn btn-ghost">CLOSE GAME</button></div>
               </section>
             </div>
-          </div>
+          </div>>
         </aside>
       </div>
     </section></main><footer class="site-footer"><span>Powered by <strong>MAFIAN TECH</strong></span></footer><div id="toast" class="toast" role="status"></div><script src="/app.js"></script><aside class="channel-invite" id="channelInvite" aria-label="Channel updates" hidden><div class="channel-invite-card"><button type="button" class="channel-invite-close" id="channelInviteClose" aria-label="Close">×</button><p class="eyebrow">UPDATES</p><h2>Stay up to date</h2><p>Join the FG official channel for product news, useful tips and new features.</p><div class="channel-invite-actions"><a class="btn btn-primary" href="https://t.me/mafian_tech" target="_blank" rel="noopener">Join official channel</a><button type="button" class="btn btn-ghost" id="channelInviteLater">Not now</button><button type="button" class="btn btn-ghost channel-invite-never" id="channelInviteNever" hidden>Don't show again</button></div></div></aside><script src="/channel-invite.js" type="module"></script><script src="/navigation.js" defer></script></body></html>
