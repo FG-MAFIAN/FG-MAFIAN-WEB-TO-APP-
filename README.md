@@ -1,113 +1,98 @@
-# AppForge — Website to Android App Generator
+# AppForge — Free Website to Android App Generator
 
-AppForge turns a public HTTPS website into an installable Android APK. Visitors can configure the app identity and supported Android behavior, submit a cloud build, follow its progress, and download the finished APK.
+AppForge turns a public HTTPS website into an installable Android APK. It is free to use: visitors do not need to create an account, sign in, verify email, or purchase a subscription.
 
-## What AppForge includes
+## Features
 
-- Account registration with email verification and sign-in.
-- A guided website-to-Android builder with live opening-screen preview.
+- Guest access to every public builder feature.
 - Custom app name, Android package ID, version name and version code.
 - Optional home-screen icon and separate opening-screen logo.
 - Theme, splash-screen and status-bar colors.
 - Portrait, landscape or automatic orientation.
 - Fullscreen or standalone display mode.
 - Pull-to-refresh, Android navigation visibility, pinch-to-zoom, keep-screen-awake and screenshot protection.
+- Live configuration preview.
 - Cloud APK compilation through GitHub Actions.
-- Build status tracking, personal project history and APK downloads.
-- Account profile and an owner-only admin dashboard for account controls, maintenance mode and private error reports.
-- A step-by-step public guide at `/docs`.
+- Build progress tracking and device-local build history.
+- Rebuild previous configurations, delete build records, copy APK links and download completed APKs.
+- Public guide at `/docs`.
 
-## How a visitor uses it
+## How to use
 
-1. Open the website and create an account. Enter the email verification code sent to the inbox.
-2. Open **Create App** and enter a public HTTPS website address.
-3. Preview the website, choose the app name and package ID, and set the version.
-4. Upload optional logos and choose the appearance and Android behavior.
-5. Select **Build installable APK**. The build runs on GitHub Actions; it can take several minutes.
-6. Open **My Apps** to follow progress. The page refreshes active build status automatically while it is open.
-7. When the status is **APK ready**, download the APK and install it on an Android device.
+1. Open **Create an app**.
+2. Enter a public HTTPS website address and an app name.
+3. Customize the package ID, version, logos, colors and Android behavior.
+4. Select **Build installable APK**.
+5. Follow the build status and download the APK when it is ready.
+6. Open **My apps & builds** to see records saved in this browser on this device.
 
-The public guide explains the settings, installation steps and common problems.
+Build history uses browser local storage. It is not synchronized between devices and may be lost if browser data is cleared.
 
 ## Technology
 
 - Static frontend: HTML, CSS and JavaScript.
-- Hosting and API routing: Cloudflare Pages with Pages Functions.
-- Accounts and project records: Supabase Auth and Postgres.
+- API routes: Vercel Functions under `api/`, with an adapter for Cloudflare Pages under `functions/`.
 - APK compilation: GitHub Actions, Node.js, Capacitor, Java and Android SDK.
-- Download tracking: Upstash Redis REST API.
+- Optional IP rate limiting: Upstash Redis REST API.
 
-## Deploy to Cloudflare Pages
+## Required server-side environment variables
 
-Connect this GitHub repository to a Cloudflare Pages project.
-
-| Setting | Value |
-|---|---|
-| Framework preset | None |
-| Root directory | Repository root |
-| Build command | Leave empty |
-| Build output directory | `.` |
-| Functions directory | `functions/` (keep at repository root) |
-
-Keep `api/`, `functions/`, `.github/workflows/` and `supabase/` in the repository root. The Pages adapter routes requests to `/api/*`.
-
-### Cloudflare Pages environment variables
-
-Add the following under **Workers & Pages → your Pages project → Settings → Variables and Secrets**. Add secrets as encrypted secrets, not plain text variables.
+Set these in the hosting provider's project settings. Never put them in browser JavaScript or commit them to Git.
 
 | Variable | Purpose |
 |---|---|
-| `GITHUB_TOKEN` | Server-side token allowed to dispatch/read Actions workflows and access build releases |
-| `GITHUB_OWNER` | `FG-MAFIAN` (GitHub repository owner) |
+| `GITHUB_TOKEN` | Server-side token with Actions workflow dispatch/read permissions and access to repository releases |
+| `GITHUB_OWNER` | `FG-MAFIAN` |
 | `GITHUB_REPO` | `FG-MAFIAN-WEB-TO-APP-` |
-| `GITHUB_BRANCH` | `main` after the production changes are merged |
-| `SUPABASE_URL` | Supabase project URL, without `/rest/v1/` |
-| `SUPABASE_ANON_KEY` | Supabase publishable/anon key used by the browser client |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role secret; server-side only |
-| `ADMIN_EMAILS` | Comma-separated email addresses permitted to use the admin panel |
-| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token; server-side only |
-| `DOWNLOAD_LIMIT_PER_HOUR` | Unique APK builds a network can download per hour; defaults to `3`, set to `0` to disable |
+| `GITHUB_BRANCH` | `main` |
 
-Apply variables to Production and Preview environments as appropriate, then redeploy Pages after changing them.
+GitHub Actions must be enabled in the repository. The workflow's built-in token needs Contents write permission to publish the APK release.
 
-### Supabase setup
+## Optional environment variables
 
-1. Create a Supabase project.
-2. Open its SQL Editor and run the complete `supabase/schema.sql` file.
-3. In Authentication settings, configure email verification to send a numeric token using the `{{ .Token }}` template and configure SMTP delivery.
-4. Set the Site URL to the deployed AppForge domain and add the production and preview URLs to the allowed redirect URLs.
-5. Add the Supabase URL, anon key and service-role key to Cloudflare Pages. Never put the service-role key in browser code or GitHub.
+| Variable | Purpose |
+|---|---|
+| `UPSTASH_REDIS_REST_URL` | Optional IP-based build rate-limit storage |
+| `UPSTASH_REDIS_REST_TOKEN` | Optional Upstash token; server-side only |
+| `SUPABASE_URL` | Optional legacy maintenance-mode setting lookup |
+| `SUPABASE_SERVICE_ROLE_KEY` | Optional server-side key for that maintenance lookup; never expose it in the browser |
 
-### GitHub Actions setup
+App creation does not depend on Supabase, user accounts, email verification or paid entitlements. Upstash is optional; when it is not configured, the builder remains available without its external rate-limit counter.
 
-1. Enable GitHub Actions for the repository.
-2. Ensure `.github/workflows/build-apk.yml` exists on the branch configured in `GITHUB_BRANCH`.
-3. Configure `GITHUB_TOKEN` with permission to dispatch workflows, read workflow runs and read release assets. The workflow's built-in token needs Contents write permission to publish the APK release.
-4. Confirm the GitHub repository's Actions usage limits are suitable for the expected number of builds.
+## Deploy
 
-### Verify the deployment
+### Vercel
 
-Open `https://YOUR-PAGES-DOMAIN/api/health`. This checks that the Pages API route responds. It does not prove that Supabase, GitHub Actions, Upstash or a real Android build is configured correctly.
+1. Import this repository into Vercel.
+2. Use the repository root as the project root and the **Other** framework preset.
+3. Set the build command to `npm run build`.
+4. Keep the project root as the output directory (do not move the `api/` directory).
+5. Add the required server-side environment variables above to the Production environment.
+6. Deploy the `main` branch.
 
-Then perform an end-to-end test:
-- Register a test account and verify its email.
-- Sign in and submit a test website.
-- Confirm that a GitHub Actions workflow starts.
-- Wait for the APK build to complete.
-- Download the APK and install it on an Android test device.
-- Confirm that the project appears under My Apps and that the owner admin panel works only for an allowlisted email.
+### Cloudflare Pages
+
+1. Connect the repository to Cloudflare Pages.
+2. Use no framework preset, repository root as the root, leave the build command empty, and set the output directory to `.`.
+3. Keep `api/`, `functions/` and `.github/workflows/` in the repository root.
+4. Add the same required server-side environment variables to the Pages project and deploy `main`.
+
+The Cloudflare Pages adapter forwards Pages environment bindings to the API handlers.
+
+## Build diagnostics
+
+Open `/api/health`. It reports whether the GitHub build settings are present, without exposing their values. If `buildReady` is false, add the names listed in `missingBuildSettings` to the hosting provider's server-side environment settings and redeploy.
+
+A successful health check only confirms configuration presence. It does not prove GitHub Actions can dispatch a workflow or that a real APK can compile. Always test one complete build and APK download.
 
 ## Important limitations
 
 - AppForge currently generates Android APKs only; it does not create iOS apps.
 - The APK loads the supplied live HTTPS website inside an Android WebView. It is not an offline website export and needs internet access.
-- Some websites block WebView embedding or depend on browser-only features. Those sites may not work until their owners adjust their security settings.
-- The current workflow produces a debug APK for testing and direct installation. Google Play distribution requires a signed release build and a separate Play Console publishing process.
-- Premium labels can be assigned by the owner, but no payment processor or automatic subscription entitlement is connected. Do not advertise paid plans as purchasable until that integration is implemented.
-- A successful JavaScript source check is not proof of a successful Android build. Test a real APK after configuring all external services.
+- Some websites block WebView embedding or depend on browser-only features.
+- The current workflow produces a debug APK for testing and direct installation. Google Play distribution requires a signed release build and a separate Play Console process.
+- Free access does not remove the hosting provider's or GitHub Actions' usage limits.
 
 ## Security
 
-Never commit GitHub tokens, Supabase service-role keys, Upstash tokens, passwords or verification codes. Keep all privileged values in Cloudflare Pages encrypted secrets. The public API returns generic errors; private technical reports are available only through the owner admin dashboard.
-
+Never commit GitHub tokens, Supabase service-role keys, Upstash tokens or passwords. Keep privileged values in encrypted hosting-provider secrets. Public build endpoints validate input and can use optional IP-based rate limiting.
