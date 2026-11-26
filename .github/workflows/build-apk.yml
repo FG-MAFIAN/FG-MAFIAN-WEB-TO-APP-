@@ -356,6 +356,7 @@ jobs:
               raw = base64.b64decode(encoded, validate=True)
               source = Image.open(BytesIO(raw)).convert('RGBA')
               source.thumbnail((512, 512), Image.Resampling.LANCZOS)
+              # Keep legacy launcher icons for older Android versions.
               sizes = {'mdpi': 48, 'hdpi': 72, 'xhdpi': 96, 'xxhdpi': 144, 'xxxhdpi': 192}
               for density, size in sizes.items():
                   folder = res / ('mipmap-' + density)
@@ -364,10 +365,41 @@ jobs:
                   icon = ImageOps.contain(source, (int(size * 0.88), int(size * 0.88)), method=Image.Resampling.LANCZOS)
                   canvas.alpha_composite(icon, ((size - icon.width) // 2, (size - icon.height) // 2))
                   canvas.save(folder / 'ic_launcher.png', optimize=True)
-              # Remove adaptive XML icons so Android uses the supplied density PNGs.
-              for xml_icon in [res / 'mipmap-anydpi-v26' / 'ic_launcher.xml', res / 'mipmap-anydpi-v26' / 'ic_launcher_round.xml']:
-                  if xml_icon.exists():
-                      xml_icon.unlink()
+                  canvas.save(folder / 'ic_launcher_round.png', optimize=True)
+
+              # Android 8+ adaptive icons: preserve the logo as a foreground layer
+              # and let Android apply the device's normal circle/squircle icon mask.
+              foreground_dir = res / 'drawable-nodpi'
+              foreground_dir.mkdir(parents=True, exist_ok=True)
+              adaptive_canvas = Image.new('RGBA', (432, 432), (0, 0, 0, 0))
+              adaptive_logo = ImageOps.contain(source, (264, 264), method=Image.Resampling.LANCZOS)
+              adaptive_canvas.alpha_composite(
+                  adaptive_logo,
+                  ((432 - adaptive_logo.width) // 2, (432 - adaptive_logo.height) // 2)
+              )
+              adaptive_canvas.save(foreground_dir / 'ic_launcher_foreground.png', optimize=True)
+
+              adaptive_dir = res / 'mipmap-anydpi-v26'
+              adaptive_dir.mkdir(parents=True, exist_ok=True)
+              adaptive_icon = '''<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/ic_launcher_background" />
+              <foreground android:drawable="@drawable/ic_launcher_foreground" />
+          </adaptive-icon>'''
+              (adaptive_dir / 'ic_launcher.xml').write_text(adaptive_icon, encoding='utf-8')
+              (adaptive_dir / 'ic_launcher_round.xml').write_text(adaptive_icon, encoding='utf-8')
+
+              icon_colors = res / 'values' / 'colors.xml'
+              if icon_colors.exists():
+                  icon_tree = ET.parse(icon_colors)
+                  icon_root = icon_tree.getroot()
+              else:
+                  icon_root = ET.Element('resources')
+                  icon_tree = ET.ElementTree(icon_root)
+              icon_bg = icon_root.find("color[@name='ic_launcher_background']")
+              if icon_bg is None:
+                  icon_bg = ET.SubElement(icon_root, 'color', {'name': 'ic_launcher_background'})
+              icon_bg.text = os.environ.get('THEME_COLOR', '#3978ff')
+              icon_tree.write(icon_colors, encoding='utf-8', xml_declaration=True)
 
           # Add an independent centered image to the Android opening screen.
           splash_data = os.environ.get('SPLASH_LOGO_DATA', '').strip()
