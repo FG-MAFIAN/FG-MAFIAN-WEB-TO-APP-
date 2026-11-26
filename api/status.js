@@ -1,6 +1,7 @@
 const getEnv = req => req?.env || process.env;
 const headersFor = token => ({
   Authorization: `Bearer ${token}`,
+  'User-Agent': 'AppForge',
   Accept: 'application/vnd.github+json',
   'X-GitHub-Api-Version': '2022-11-28'
 });
