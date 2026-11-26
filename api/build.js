@@ -76,28 +76,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return fail(res, 405, 'Method not allowed.'); }
 
-  const { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } = process.env;
-  const bearer = String(req.headers?.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY || !bearer) return fail(res, 401, 'Sign in to create an app.');
-  try {
-    const authResponse = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, {
-      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${bearer}` }
-    });
-    if (!authResponse.ok) return fail(res, 401, 'Your session has expired. Please sign in again.');
-    const account = await authResponse.json();
-    if (SUPABASE_SERVICE_ROLE_KEY) {
-      const profileResponse = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/profiles?id=eq.${encodeURIComponent(account.id)}&select=is_blocked&limit=1`, {
-        headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
-      });
-      if (!profileResponse.ok) throw new Error('Profile check failed');
-      const profiles = await profileResponse.json();
-      if (!profiles.length || profiles[0]?.is_blocked) return fail(res, 403, 'This account cannot create apps.');
-    }
-  } catch (error) {
-    console.error('Build account verification error:', error);
-    return fail(res, 503, 'Something went wrong. Please try again.');
-  }
-
+  // Public builds do not require an account or Supabase authentication.
   const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO, GITHUB_BRANCH = 'main' } = process.env;
   if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return fail(res, 503, 'Something went wrong. Please try again.');
 
