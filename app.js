@@ -188,7 +188,7 @@
 
       if (data.status === 'queued' || data.status === 'in_progress') {
         if ($('buildTitle')) $('buildTitle').textContent = data.status === 'queued' ? 'Build queued…' : 'Building your APK…';
-        if ($('buildMessage')) $('buildMessage').textContent = 'GitHub is preparing your Android app. You can follow progress from My Builds.';
+        if ($('buildMessage')) $('buildMessage').textContent = 'Your APK is being built. You can leave this page open or close the game; progress will remain visible here.';
         return;
       }
       stopPolling();
@@ -243,50 +243,58 @@
     } finally {
       polling = false;
       if (activeBuild && (activeBuild.status === 'queued' || activeBuild.status === 'in_progress' || !activeBuild.status)) {
-        if (!pollTimer) pollTimer = setTimeout(() => { pollTimer = null; checkBuild(activeBuild); }, 10000);
+        if (!pollTimer) pollTimer = setTimeout(() => { pollTimer = null; checkBuild(activeBuild); }, 4000);
       }
     }
   }
 
-  // Snake mini-game runs independently while the APK build is polled.
-  const gameModal = $('gameModal'), gameOffer = $('gameOffer'), snakeGame = $('snakeGame');
-  const snakeCanvas = $('snakeCanvas'), snakeContext = snakeCanvas?.getContext('2d');
-  let snake=[], snakeFood={x:10,y:8}, snakeDirection={x:1,y:0}, snakeNextDirection={x:1,y:0};
-  let snakeTimer=null, snakePoints=0, snakePaused=false;
-  const snakeCells=20, snakeCellSize=15;
-  function placeSnakeFood(){do{snakeFood={x:Math.floor(Math.random()*snakeCells),y:Math.floor(Math.random()*snakeCells)}}while(snake.some(p=>p.x===snakeFood.x&&p.y===snakeFood.y));}
-  function drawSnake(){
-    if(!snakeContext)return;const c=snakeContext;c.fillStyle='#061326';c.fillRect(0,0,300,300);c.strokeStyle='rgba(60,145,255,.10)';
-    for(let i=0;i<=snakeCells;i++){let p=i*snakeCellSize;c.beginPath();c.moveTo(p,0);c.lineTo(p,300);c.stroke();c.beginPath();c.moveTo(0,p);c.lineTo(300,p);c.stroke();}
-    c.fillStyle='#ff5c9a';c.shadowColor='#ff5c9a';c.shadowBlur=12;c.beginPath();c.arc(snakeFood.x*15+7.5,snakeFood.y*15+7.5,5,0,Math.PI*2);c.fill();c.shadowBlur=0;
-    snake.forEach((p,i)=>{c.fillStyle=i?'#24a7ff':'#e8fbff';c.shadowColor='#168bff';c.shadowBlur=i?5:12;c.fillRect(p.x*15+1,p.y*15+1,13,13)});c.shadowBlur=0;
+  // Tic-Tac-Toe mini-game runs independently while the APK build is polled.
+  const gameModal = $('gameModal'), gameOffer = $('gameOffer'), tttGame = $('tttGame');
+  const tttBoard = $('tttBoard');
+  let tttCells = Array(9).fill(''), tttTurn = 'X', tttOver = false, tttScore = {X:0,O:0};
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  function setTttStatus(message){ if($('tttStatus')) $('tttStatus').textContent=message; }
+  function renderTtt(){
+    if(!tttBoard)return;
+    tttBoard.innerHTML='';
+    tttCells.forEach((value,index)=>{
+      const cell=document.createElement('button');
+      cell.type='button';cell.className='ttt-cell'+(value?' is-'+value.toLowerCase():'');
+      cell.textContent=value;cell.disabled=Boolean(value)||tttOver;
+      cell.setAttribute('aria-label',value?('Cell '+(index+1)+': '+value):('Play cell '+(index+1)));
+      cell.addEventListener('click',()=>playTtt(index));
+      tttBoard.appendChild(cell);
+    });
+    if($('tttScore'))$('tttScore').textContent='X '+tttScore.X+' — O '+tttScore.O;
   }
-  function finishSnake(msg){clearInterval(snakeTimer);snakeTimer=null;if($('snakeStatus'))$('snakeStatus').textContent=msg;}
-  function snakeTick(){
-    snakeDirection=snakeNextDirection;const h={x:snake[0].x+snakeDirection.x,y:snake[0].y+snakeDirection.y};
-    const ate=h.x===snakeFood.x&&h.y===snakeFood.y,body=ate?snake:snake.slice(0,-1);
-    if(h.x<0||h.y<0||h.x>=20||h.y>=20||body.some(p=>p.x===h.x&&p.y===h.y)){finishSnake('Game over — tap PLAY AGAIN to restart.');return;}
-    snake.unshift(h);if(ate){snakePoints+=10;if($('snakeScore'))$('snakeScore').textContent=String(snakePoints);placeSnakeFood();}else snake.pop();drawSnake();
+  function resetTtt(){
+    tttCells=Array(9).fill('');tttTurn='X';tttOver=false;
+    setTttStatus('Your turn: X. Tap any square to play.');
+    renderTtt();
   }
-  function startSnake(){
-    clearInterval(snakeTimer);snake=[{x:7,y:10},{x:6,y:10},{x:5,y:10}];snakeDirection={x:1,y:0};snakeNextDirection={x:1,y:0};snakePoints=0;snakePaused=false;
-    if($('snakeScore'))$('snakeScore').textContent='0';if($('snakeStatus'))$('snakeStatus').textContent='Use the arrow buttons, swipe, or keyboard arrows.';
-    if($('snakePause'))$('snakePause').textContent='PAUSE';placeSnakeFood();drawSnake();snakeTimer=setInterval(snakeTick,125);
+  function playTtt(index){
+    if(tttOver||tttCells[index])return;
+    tttCells[index]=tttTurn;
+    const line=wins.find(combo=>combo.every(i=>tttCells[i]===tttTurn));
+    if(line){
+      tttOver=true;tttScore[tttTurn]++;
+      setTttStatus(tttTurn+' wins! Tap NEW GAME to play again.');
+    }else if(tttCells.every(Boolean)){
+      tttOver=true;setTttStatus("It's a draw! Tap NEW GAME to play again.");
+    }else{
+      tttTurn=tttTurn==='X'?'O':'X';
+      setTttStatus('Your turn: '+tttTurn+'.');
+    }
+    renderTtt();
   }
-  function setSnakeDirection(x,y){if(x===-snakeDirection.x&&y===-snakeDirection.y)return;snakeNextDirection={x,y};}
-  function pauseSnake(){
-    if(snakePaused){snakePaused=false;if($('snakeStatus'))$('snakeStatus').textContent='Game resumed.';snakeTimer=setInterval(snakeTick,125);if($('snakePause'))$('snakePause').textContent='PAUSE';}
-    else if(snakeTimer){snakePaused=true;clearInterval(snakeTimer);snakeTimer=null;if($('snakeStatus'))$('snakeStatus').textContent='Paused.';if($('snakePause'))$('snakePause').textContent='RESUME';}
-  }
-  function closeGame(){clearInterval(snakeTimer);snakeTimer=null;snakePaused=false;gameModal?.classList.add('hidden');}
-  function openGameOffer(){if(!gameModal)return;gameOffer?.classList.remove('hidden');snakeGame?.classList.add('hidden');gameModal.classList.remove('hidden');}
-  $('playGameBtn')?.addEventListener('click',()=>{gameOffer?.classList.add('hidden');snakeGame?.classList.remove('hidden');startSnake();});
-  $('skipGameBtn')?.addEventListener('click',closeGame);$('gameClose')?.addEventListener('click',closeGame);$('snakeClose')?.addEventListener('click',closeGame);
-  $('snakeRestart')?.addEventListener('click',startSnake);$('snakePause')?.addEventListener('click',pauseSnake);
-  document.querySelectorAll('[data-snake-dir]').forEach(b=>b.addEventListener('click',()=>{const [x,y]=b.dataset.snakeDir.split(',').map(Number);setSnakeDirection(x,y);}));
-  document.addEventListener('keydown',e=>{if(gameModal?.classList.contains('hidden'))return;const k={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};if(k[e.key]){e.preventDefault();setSnakeDirection(...k[e.key]);}if(e.key==='Escape')closeGame();});
-  let snakeTouch=null;snakeCanvas?.addEventListener('touchstart',e=>{const t=e.changedTouches[0];snakeTouch={x:t.clientX,y:t.clientY}},{passive:true});
-  snakeCanvas?.addEventListener('touchend',e=>{if(!snakeTouch)return;const t=e.changedTouches[0],dx=t.clientX-snakeTouch.x,dy=t.clientY-snakeTouch.y;if(Math.max(Math.abs(dx),Math.abs(dy))>18){if(Math.abs(dx)>Math.abs(dy))setSnakeDirection(dx>0?1:-1,0);else setSnakeDirection(0,dy>0?1:-1);}snakeTouch=null;},{passive:true});
+  function closeGame(){gameModal?.classList.add('hidden');}
+  function openGameOffer(){if(!gameModal)return;gameOffer?.classList.remove('hidden');tttGame?.classList.add('hidden');gameModal.classList.remove('hidden');}
+  $('playGameBtn')?.addEventListener('click',()=>{gameOffer?.classList.add('hidden');tttGame?.classList.remove('hidden');resetTtt();});
+  $('skipGameBtn')?.addEventListener('click',closeGame);
+  $('gameClose')?.addEventListener('click',closeGame);
+  $('tttClose')?.addEventListener('click',closeGame);
+  $('tttRestart')?.addEventListener('click',resetTtt);
+  document.addEventListener('keydown',e=>{if(!gameModal?.classList.contains('hidden')&&e.key==='Escape')closeGame();});
   gameModal?.addEventListener('click',e=>{if(e.target===gameModal)closeGame();});
 
   const form = $('appForm');
@@ -330,7 +338,7 @@
       $('copyPublicDownload')?.classList.add('hidden');
       $('publicDownloadHint')?.classList.add('hidden');
       if ($('buildTitle')) $('buildTitle').textContent = 'Starting your APK build…';
-      if ($('buildMessage')) $('buildMessage').textContent = 'Sending your app settings to the secure build service.';
+      if ($('buildMessage')) $('buildMessage').textContent = 'Sending your app settings to the secure build service. Build progress will appear here.';
 
       const response = await fetch('/api/build', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -345,7 +353,7 @@
       saveBuild(build);
       activeBuild = build;
       if ($('buildTitle')) $('buildTitle').textContent = 'Build request accepted';
-      if ($('buildMessage')) $('buildMessage').textContent = data.message || 'Your Android app is being prepared. Check My Builds for progress.';
+      if ($('buildMessage')) $('buildMessage').textContent = data.message || 'Your Android app is being prepared. You can close the game and watch the build status here.';
       openGameOffer();
       checkBuild(build);
     } catch (error) {
