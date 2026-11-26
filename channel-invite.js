@@ -1,5 +1,3 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
 (() => {
   const box = document.getElementById('channelInvite');
   if (!box || location.pathname === '/admin' || location.pathname === '/admin.html') return;
@@ -8,94 +6,13 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     document.getElementById('channelInviteClose'),
     document.getElementById('channelInviteLater')
   ].filter(Boolean);
-  const neverButton = document.getElementById('channelInviteNever');
-  const lastKey = 'appforge_channel_last';
-  const interval = 30 * 60 * 1000;
-  let client = null;
-  let signedInUser = null;
-  let timer = null;
-  let authListenerRegistered = false;
 
-  function neverKey() {
-    return signedInUser?.id ? `appforge_channel_never:${signedInUser.id}` : '';
-  }
-
-  function isSuppressed() {
-    const key = neverKey();
-    if (!key) return false;
-    try { return localStorage.getItem(key) === '1'; } catch { return false; }
-  }
-
-  function syncControls() {
-    if (neverButton) neverButton.hidden = !signedInUser;
-    if (signedInUser && isSuppressed()) {
-      box.hidden = true;
-      if (timer) clearTimeout(timer);
-    }
-  }
-
-  async function refreshSession() {
-    try {
-      if (!client) {
-        const response = await fetch('/api/config', { cache: 'no-store' });
-        const config = await response.json();
-        if (config.configured) client = createClient(config.url, config.anonKey);
-      }
-      if (client) {
-        const { data } = await client.auth.getSession();
-        signedInUser = data?.session?.user || null;
-        if (!authListenerRegistered) {
-          authListenerRegistered = true;
-          client.auth.onAuthStateChange((_event, session) => {
-            signedInUser = session?.user || null;
-            syncControls();
-            if ((!signedInUser || !isSuppressed()) && !timer && box.hidden) schedule();
-          });
-        }
-      }
-    } catch {
-      signedInUser = null;
-    }
-    syncControls();
-  }
-
-  function schedule() {
-    if (timer) clearTimeout(timer);
-    let last = 0;
-    try {
-      last = Number(localStorage.getItem(lastKey) || 0);
-      if (!last) {
-        last = Date.now();
-        localStorage.setItem(lastKey, String(last));
-      }
-    } catch {}
-    const wait = last ? Math.max(0, interval - (Date.now() - last)) : interval;
-    timer = setTimeout(show, wait);
-  }
-
-  async function show() {
-    await refreshSession();
-    if (isSuppressed()) return;
-    if (!box.hidden) return;
-    box.hidden = false;
-    try { localStorage.setItem(lastKey, String(Date.now())); } catch {}
-    schedule();
-  }
-
+  // Show the invitation on every fresh visit. Dismissal lasts only until
+  // this page is left or reloaded; there is no permanent "never show" choice.
   function dismiss() {
     box.hidden = true;
-    try { localStorage.setItem(lastKey, String(Date.now())); } catch {}
-    schedule();
   }
 
   closeButtons.forEach(button => button.addEventListener('click', dismiss));
-  neverButton?.addEventListener('click', () => {
-    const key = neverKey();
-    if (!key) return;
-    try { localStorage.setItem(key, '1'); } catch {}
-    if (timer) clearTimeout(timer);
-    box.hidden = true;
-  });
-
-  refreshSession().finally(schedule);
+  box.hidden = false;
 })();
