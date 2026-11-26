@@ -225,7 +225,7 @@
         closeGame();
         const cancelled = data.status === 'cancelled';
         if ($('buildTitle')) $('buildTitle').textContent = cancelled ? 'Build cancelled' : 'Build failed';
-        if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
+        if ($('buildMessage')) $('buildMessage').textContent = data.message || 'Something went wrong. Please try again.';
         const link = $('downloadApk');
         if (link && data.runUrl) {
           link.href = data.runUrl; link.textContent = 'Open build logs on GitHub';
