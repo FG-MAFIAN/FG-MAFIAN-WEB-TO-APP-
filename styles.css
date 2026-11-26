@@ -507,3 +507,5 @@ body.home-menu-open{overflow:hidden!important}.home-menu>summary:focus-visible{o
 .ttt-cell.is-x{color:#59c4ff}.ttt-cell.is-o{color:#ff83bd}
 .ttt-cell:disabled{opacity:1}
 html[data-theme="light"] .ttt-cell{background:#edf5ff;color:#15243b}
+
+.result.build-complete .build-progress-indicator{animation:none;transform:translateX(0);width:100%}
