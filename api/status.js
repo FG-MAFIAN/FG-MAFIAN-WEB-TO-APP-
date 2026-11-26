@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       run = await response.json();
     } else {
       const response = await fetch(`${base}/actions/workflows/build-apk.yml/runs?event=workflow_dispatch&per_page=50`, { headers });
-      if (!response.ok) { console.error('GitHub status lookup failed:', response.status); return res.status(502).json({ error: 'Something went wrong. Please try again.' }); }
+      if (!response.ok) { console.error('GitHub status lookup failed:', response.status); return res.status(502).json({ error: `GitHub Actions status lookup failed (HTTP ${response.status}). Check that GITHUB_TOKEN has Actions read permission.` }); }
       const payload = await response.json();
       run = (payload.workflow_runs || []).find(item => item.display_title === `AppForge APK ${buildId}`);
       if (!run) return res.status(200).json({ status: 'queued', buildId, message: 'Waiting for GitHub to register this build.' });
