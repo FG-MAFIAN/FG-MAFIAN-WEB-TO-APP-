@@ -64,7 +64,7 @@ export default async function handler(req, res) {
   const runId = String(req.query?.run_id || '');
   if (!/^\d{1,20}$/.test(runId)) return res.status(400).json({ error: 'Missing or invalid workflow run ID.' });
   const base = `https://api.github.com/repos/${encodeURIComponent(GITHUB_OWNER)}/${encodeURIComponent(GITHUB_REPO)}`;
-  const headers = { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+  const headers = { Authorization: `Bearer ${GITHUB_TOKEN}`, 'User-Agent': 'AppForge', Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
 
   try {
     const runResponse = await fetch(`${base}/actions/runs/${runId}`, { headers });
