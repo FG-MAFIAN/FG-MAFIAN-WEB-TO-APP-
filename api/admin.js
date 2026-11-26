@@ -11,10 +11,10 @@ export default async function handler(req, res) {
   const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_EMAILS = '' } = getEnv(req);
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return json(res, 503, { error: 'Admin service is not configured. Check the platform environment variables in Cloudflare Pages.' });
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!token) return json(res, 401, { error: 'Sign in with an administrator account.' });
+  if (!token) return json(res, 401, { error: 'Administrator authorization is required.' });
   try {
     const auth = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, { headers: { apikey: getEnv(req).SUPABASE_ANON_KEY || SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${token}` } });
-    if (!auth.ok) return json(res, 401, { error: 'Your session is invalid or expired. Sign in again.' });
+    if (!auth.ok) return json(res, 401, { error: 'Administrator authorization is invalid or expired.' });
     const user = await auth.json();
     const allowed = ADMIN_EMAILS.split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
     if (!user.email || !allowed.includes(user.email.toLowerCase())) return json(res, 403, { error: 'This account is not listed as a platform administrator.' });
@@ -34,7 +34,6 @@ export default async function handler(req, res) {
     if (body.action === 'user-update') {
       if (!/^[0-9a-f-]{36}$/i.test(String(body.userId || ''))) return json(res, 400, { error: 'A valid user ID is required.' });
       const patch = {};
-      if (['free', 'premium'].includes(body.plan)) patch.plan = body.plan;
       if (typeof body.isBlocked === 'boolean') patch.is_blocked = body.isBlocked;
       if (!Object.keys(patch).length) return json(res, 400, { error: 'No valid account changes were supplied.' });
       const update = await supabaseRequest(root, key, `profiles?id=eq.${encodeURIComponent(body.userId)}`, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(patch) });
