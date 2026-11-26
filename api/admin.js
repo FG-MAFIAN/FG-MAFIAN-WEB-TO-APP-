@@ -32,7 +32,6 @@ export default async function handler(req, res) {
     if (body.action === 'user-update') {
       if (!/^[0-9a-f-]{36}$/i.test(String(body.userId || ''))) return json(res, 400, { error: 'A valid user ID is required.' });
       const patch = {};
-      if (['free', 'premium'].includes(body.plan)) patch.plan = body.plan;
       if (typeof body.isBlocked === 'boolean') patch.is_blocked = body.isBlocked;
       if (!Object.keys(patch).length) return json(res, 400, { error: 'No valid account changes were supplied.' });
       const update = await supabaseRequest(root, key, `profiles?id=eq.${encodeURIComponent(body.userId)}`, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(patch) });
