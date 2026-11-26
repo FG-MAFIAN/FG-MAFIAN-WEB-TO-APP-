@@ -37,15 +37,12 @@ async function load() {
     const row = node('div', 'admin-user');
     const info = node('div');
     info.append(node('b', '', user.display_name || user.email || user.id));
-    info.append(node('small', '', `${user.email || ''} · ${user.plan || 'free'} · ${user.is_blocked ? 'Blocked' : 'Active'}`));
+    info.append(node('small', '', `${user.email || ''} · ${user.is_blocked ? 'Blocked' : 'Active'}`));
     const controls = node('div', 'admin-actions');
-    const plan = node('button', 'btn btn-ghost', user.plan === 'premium' ? 'Set Free' : 'Make Premium');
-    plan.type = 'button';
-    plan.addEventListener('click', () => updateUser(user.id, { plan: user.plan === 'premium' ? 'free' : 'premium' }));
     const block = node('button', 'btn btn-ghost', user.is_blocked ? 'Unblock' : 'Block');
     block.type = 'button';
     block.addEventListener('click', () => updateUser(user.id, { isBlocked: !user.is_blocked }));
-    controls.append(plan, block); row.append(info, controls); $('adminUsers').append(row);
+    controls.append(block); row.append(info, controls); $('adminUsers').append(row);
   });
   if (!data.users.length) $('adminUsers').textContent = 'No accounts yet.';
   filterUsers();
