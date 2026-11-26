@@ -189,6 +189,7 @@
       if (data.status === 'queued' || data.status === 'in_progress') {
         if ($('buildTitle')) $('buildTitle').textContent = data.status === 'queued' ? 'Build queued…' : 'Building your APK…';
         if ($('buildProgressLabel')) $('buildProgressLabel').textContent = data.status === 'queued' ? 'WAITING FOR BUILDER' : 'BUILD IN PROGRESS';
+        if ($('buildProgressLabel')) $('buildProgressLabel').textContent = data.status === 'queued' ? 'WAITING FOR BUILDER' : 'BUILD IN PROGRESS';
         if ($('buildMessage')) $('buildMessage').textContent = 'Your APK is being built. You can leave this page open or close the game; progress will remain visible here.';
         return;
       }
@@ -197,6 +198,8 @@
         closeGame();
         build.downloadUrl = data.downloadUrl; saveBuild(build);
         if ($('buildTitle')) $('buildTitle').textContent = 'Your APK is ready!';
+        if ($('buildProgressLabel')) $('buildProgressLabel').textContent = 'BUILD COMPLETE';
+        $('result')?.classList.add('build-complete');
         if ($('buildProgressLabel')) $('buildProgressLabel').textContent = 'BUILD COMPLETE';
         $('result')?.classList.add('build-complete');
         if ($('buildMessage')) $('buildMessage').textContent = 'Your APK is ready to download directly to this device.';
@@ -231,6 +234,8 @@
         closeGame();
         const cancelled = data.status === 'cancelled';
         if ($('buildTitle')) $('buildTitle').textContent = cancelled ? 'Build cancelled' : 'Build failed';
+        if ($('buildProgressLabel')) $('buildProgressLabel').textContent = cancelled ? 'BUILD CANCELLED' : 'BUILD FAILED';
+        $('result')?.classList.add('build-complete');
         if ($('buildProgressLabel')) $('buildProgressLabel').textContent = cancelled ? 'BUILD CANCELLED' : 'BUILD FAILED';
         $('result')?.classList.add('build-complete');
         if ($('buildMessage')) $('buildMessage').textContent = data.message || 'Something went wrong. Please try again.';
