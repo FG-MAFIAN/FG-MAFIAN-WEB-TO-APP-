@@ -12,13 +12,14 @@ function clientKey(req) {
 
 function downloadLimit() {
   const raw = process.env.DOWNLOAD_LIMIT_PER_HOUR;
-  if (raw === undefined || raw === '') return 3;
+  if (raw === undefined || raw === '') return 0;
   const value = Number(raw);
   return Number.isInteger(value) && value >= 0 ? value : 3;
 }
 
 async function reserveDownload(req, buildId) {
   const { UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } = process.env;
+  if (downloadLimit() === 0) return;
   if (!UPSTASH_REDIS_REST_URL || !UPSTASH_REDIS_REST_TOKEN) throw new Error('Download tracking is not configured.');
 
   const now = Date.now();
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed.' }); }
   const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO } = process.env;
   if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
+  if (downloadLimit() > 0 && (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN)) return res.status(503).json({ error: 'Download tracking is not configured.' });
 
   const runId = String(req.query?.run_id || '');
   if (!/^\d{1,20}$/.test(runId)) return res.status(400).json({ error: 'Missing or invalid workflow run ID.' });
