@@ -9,7 +9,8 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'Method not allowed.' }); }
   const { GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO } = getEnv(req);
-  if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) return res.status(503).json({ error: 'Something went wrong. Please try again.' });
+  const missing = ['GITHUB_TOKEN', 'GITHUB_OWNER', 'GITHUB_REPO'].filter(key => !getEnv(req)[key]);
+  if (missing.length) return res.status(503).json({ error: `Build service configuration is incomplete. Missing: ${missing.join(', ')}.` });
 
   const runId = String(req.query?.run_id || '');
   const buildId = String(req.query?.build_id || '');
@@ -23,8 +24,8 @@ export default async function handler(req, res) {
     let run = null;
     if (/^\d{1,20}$/.test(runId)) {
       const response = await fetch(`${base}/actions/runs/${runId}`, { headers });
-      if (response.status === 404) return res.status(404).json({ error: 'Something went wrong. Please try again.' });
-      if (!response.ok) { console.error('GitHub status lookup failed:', response.status); return res.status(502).json({ error: 'Something went wrong. Please try again.' }); }
+      if (response.status === 404) return res.status(404).json({ error: 'The GitHub build run was not found. Refresh the build history and try again.' });
+      if (!response.ok) { console.error('GitHub status lookup failed:', response.status); return res.status(502).json({ error: `GitHub Actions status lookup failed (HTTP ${response.status}). Check that GITHUB_TOKEN has Actions read permission.` }); }
       run = await response.json();
     } else {
       const response = await fetch(`${base}/actions/workflows/build-apk.yml/runs?event=workflow_dispatch&per_page=50`, { headers });
@@ -35,7 +36,7 @@ export default async function handler(req, res) {
     }
 
     if (run.path !== '.github/workflows/build-apk.yml' || run.event !== 'workflow_dispatch') {
-      return res.status(403).json({ error: 'Something went wrong. Please try again.' });
+      return res.status(403).json({ error: 'This build reference is not a valid AppForge APK workflow.' });
     }
     const common = { runId: run.id, status: run.status, runUrl: run.html_url || null };
     if (run.status === 'queued' || run.status === 'waiting' || run.status === 'requested' || run.status === 'pending') {
