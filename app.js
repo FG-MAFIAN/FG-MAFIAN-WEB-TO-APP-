@@ -32,7 +32,7 @@
       const preview = text.replace(/\s+/g, ' ').slice(0, 180);
       throw new Error('Something went wrong. Please try again.');
     }
-    if (!response.ok) throw new Error('Something went wrong. Please try again.');
+    if (!response.ok) throw new Error(typeof data.error === 'string' && data.error.length < 240 ? data.error : 'Something went wrong. Please try again.');
     return data;
   }
 
@@ -236,8 +236,8 @@
     } catch (error) {
       stopPolling();
       if ($('buildTitle')) $('buildTitle').textContent = 'Build status unavailable';
-      if ($('buildMessage')) $('buildMessage').textContent = 'Something went wrong. Please try again.';
-      toast('Something went wrong. Please try again.');
+      if ($('buildMessage')) $('buildMessage').textContent = error?.message || 'Something went wrong. Please try again.';
+      toast(error?.message || 'Something went wrong. Please try again.');
     } finally {
       polling = false;
       if (activeBuild && (activeBuild.status === 'queued' || activeBuild.status === 'in_progress' || !activeBuild.status)) {
